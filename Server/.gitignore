@@ -22,3 +22,10 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Documentation files (keep locally, don't push)
+API_STATUS_REPORT.md
+QA_TESTING_GUIDE.md
+QA_QUICK_START.md
+TICKET_2_COMPLETION.md
+postman_collection.json
