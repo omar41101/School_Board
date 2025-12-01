@@ -1,7 +1,6 @@
 # Swagger API Documentation
 
-## 🎉 Swagger UI Successfully Integrated!
-
+ 
 Your School Management ERP API now has **interactive API documentation** powered by Swagger/OpenAPI.
 
 ## 📍 Access Swagger UI
