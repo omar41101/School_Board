@@ -1,4 +1,5 @@
 const Student = require('../models/Student.model');
+const User = require('../models/User.model');
 const { AppError } = require('../utils/errorHandler');
 const asyncHandler = require('../utils/asyncHandler');
 
@@ -10,7 +11,7 @@ exports.getAllStudents = asyncHandler(async (req, res) => {
   if (status) query.status = status;
 
   const students = await Student.find(query)
-    .populate('user', 'name email avatar phone')
+    .populate('user', 'firstName lastName email avatar phone')
     .populate('parent')
     .limit(limit * 1)
     .skip((page - 1) * limit)
@@ -28,7 +29,7 @@ exports.getAllStudents = asyncHandler(async (req, res) => {
 
 exports.getStudentById = asyncHandler(async (req, res, next) => {
   const student = await Student.findById(req.params.id)
-    .populate('user', 'name email avatar phone')
+    .populate('user', 'firstName lastName email avatar phone')
     .populate('parent');
 
   if (!student) {
@@ -50,18 +51,42 @@ exports.createStudent = asyncHandler(async (req, res) => {
 });
 
 exports.updateStudent = asyncHandler(async (req, res, next) => {
-  const student = await Student.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true
-  });
+  const { _id, createdAt, updatedAt, firstName, lastName, email, phone, avatar, ...studentData } = req.body;
 
+  // Find the student first to get the user ID
+  const student = await Student.findById(req.params.id);
+  
   if (!student) {
     return next(new AppError('Student not found', 404));
   }
 
+  // Update user information if provided
+  const userUpdateData = {};
+  if (firstName !== undefined) userUpdateData.firstName = firstName;
+  if (lastName !== undefined) userUpdateData.lastName = lastName;
+  if (email !== undefined) userUpdateData.email = email;
+  if (phone !== undefined) userUpdateData.phone = phone;
+  if (avatar !== undefined) userUpdateData.avatar = avatar;
+
+  if (Object.keys(userUpdateData).length > 0) {
+    await User.findByIdAndUpdate(student.user, userUpdateData, {
+      runValidators: true
+    });
+  }
+
+  // Update student-specific information
+  const updatedStudent = await Student.findByIdAndUpdate(
+    req.params.id,
+    studentData,
+    {
+      new: true,
+      runValidators: true
+    }
+  ).populate('user', 'firstName lastName email avatar phone');
+
   res.status(200).json({
     status: 'success',
-    data: { student }
+    data: { student: updatedStudent }
   });
 });
 

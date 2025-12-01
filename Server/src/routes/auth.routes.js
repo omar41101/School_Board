@@ -19,17 +19,21 @@ const router = express.Router();
  *   post:
  *     summary: Register a new user
  *     tags: [Authentication]
+ *     description: Register a new user. Basic registration only requires firstName, lastName, email, password, and role. For creating role-specific profiles (student/teacher/parent), include the respective required fields.
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required: [name, email, password]
+ *             required: [firstName, lastName, email, password]
  *             properties:
- *               name:
+ *               firstName:
  *                 type: string
- *                 example: John Doe
+ *                 example: John
+ *               lastName:
+ *                 type: string
+ *                 example: Doe
  *               email:
  *                 type: string
  *                 example: john@school.com
@@ -40,6 +44,49 @@ const router = express.Router();
  *                 type: string
  *                 enum: [admin, student, teacher, parent, direction]
  *                 example: student
+ *               matricule:
+ *                 type: string
+ *                 description: Required for student role
+ *                 example: STU2025001
+ *               dateOfBirth:
+ *                 type: string
+ *                 format: date
+ *                 description: Required for student/teacher role
+ *                 example: 2010-05-15
+ *               gender:
+ *                 type: string
+ *                 enum: [male, female, other]
+ *                 description: Required for student/teacher role
+ *                 example: male
+ *               level:
+ *                 type: string
+ *                 description: Required for student role
+ *                 example: Grade 10
+ *               className:
+ *                 type: string
+ *                 description: Required for student role
+ *                 example: 10A
+ *               employeeId:
+ *                 type: string
+ *                 description: Required for teacher role
+ *                 example: T987654
+ *               qualification:
+ *                 type: string
+ *                 description: Required for teacher role
+ *                 example: MSc Mathematics
+ *               specialization:
+ *                 type: string
+ *                 description: Required for teacher role
+ *                 example: Algebra
+ *               salary:
+ *                 type: number
+ *                 description: Required for teacher role
+ *                 example: 3500
+ *               relationship:
+ *                 type: string
+ *                 enum: [father, mother, guardian]
+ *                 description: Required for parent role
+ *                 example: father
  *     responses:
  *       201:
  *         description: User registered successfully
@@ -133,7 +180,8 @@ const router = express.Router();
 
 // Validation rules
 const registerValidation = [
-  body('name').trim().notEmpty().withMessage('Name is required'),
+  body('firstName').trim().notEmpty().withMessage('First name is required'),
+  body('lastName').trim().notEmpty().withMessage('Last name is required'),
   body('email').isEmail().withMessage('Please provide a valid email'),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
   body('role').optional().isIn(['admin', 'student', 'teacher', 'parent', 'direction'])

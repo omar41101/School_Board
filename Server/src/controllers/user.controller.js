@@ -55,7 +55,13 @@ exports.getUserById = asyncHandler(async (req, res, next) => {
 // @route   PUT /api/users/:id
 // @access  Private
 exports.updateUser = asyncHandler(async (req, res, next) => {
-  const { password, ...updateData } = req.body;
+  // Remove immutable fields from update
+  const { password, _id, role, createdAt, updatedAt, ...updateData } = req.body;
+
+  // Prevent empty updates
+  if (Object.keys(updateData).length === 0) {
+    return next(new AppError('No valid fields to update', 400));
+  }
 
   const user = await User.findByIdAndUpdate(
     req.params.id,

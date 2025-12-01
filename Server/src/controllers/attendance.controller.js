@@ -19,7 +19,9 @@ exports.createAttendance = asyncHandler(async (req, res) => {
 });
 
 exports.updateAttendance = asyncHandler(async (req, res, next) => {
-  const attendance = await Attendance.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  const { _id, createdAt, updatedAt, ...updateData } = req.body;
+  
+  const attendance = await Attendance.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
   if (!attendance) return next(new AppError('Attendance record not found', 404));
   res.status(200).json({ status: 'success', data: { attendance } });
 });

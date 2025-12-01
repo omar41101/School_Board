@@ -25,7 +25,9 @@ exports.createCourse = asyncHandler(async (req, res) => {
 });
 
 exports.updateCourse = asyncHandler(async (req, res, next) => {
-  const course = await Course.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  const { _id, createdAt, updatedAt, ...updateData } = req.body;
+  
+  const course = await Course.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
   if (!course) return next(new AppError('Course not found', 404));
   res.status(200).json({ status: 'success', data: { course } });
 });

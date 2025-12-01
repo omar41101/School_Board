@@ -19,7 +19,9 @@ exports.createAssignment = asyncHandler(async (req, res) => {
 });
 
 exports.updateAssignment = asyncHandler(async (req, res, next) => {
-  const assignment = await Assignment.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  const { _id, createdAt, updatedAt, isOverdue, ...updateData } = req.body;
+  
+  const assignment = await Assignment.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
   if (!assignment) return next(new AppError('Assignment not found', 404));
   res.status(200).json({ status: 'success', data: { assignment } });
 });

@@ -27,23 +27,29 @@ exports.register = asyncHandler(async (req, res, next) => {
     role: role || 'student'
   });
 
-  // Create role-specific profile
-  let profile;
-  if (role === 'student' && additionalData) {
-    profile = await Student.create({
-      user: user._id,
-      ...additionalData
-    });
-  } else if (role === 'teacher' && additionalData) {
-    profile = await Teacher.create({
-      user: user._id,
-      ...additionalData
-    });
-  } else if (role === 'parent' && additionalData) {
-    profile = await Parent.create({
-      user: user._id,
-      ...additionalData
-    });
+  // Create role-specific profile only if required fields are provided
+  let profile = null;
+  
+  try {
+    if (role === 'student' && additionalData.matricule && additionalData.dateOfBirth && additionalData.gender && additionalData.level && additionalData.className) {
+      profile = await Student.create({
+        user: user._id,
+        ...additionalData
+      });
+    } else if (role === 'teacher' && additionalData.employeeId && additionalData.dateOfBirth && additionalData.gender && additionalData.qualification && additionalData.specialization && additionalData.salary) {
+      profile = await Teacher.create({
+        user: user._id,
+        ...additionalData
+      });
+    } else if (role === 'parent' && additionalData.relationship) {
+      profile = await Parent.create({
+        user: user._id,
+        ...additionalData
+      });
+    }
+  } catch (error) {
+    // If profile creation fails, log it but don't fail the registration
+    console.log('Profile creation skipped or failed:', error.message);
   }
 
   // Generate token
@@ -60,7 +66,8 @@ exports.register = asyncHandler(async (req, res, next) => {
       role: user.role,
       avatar: user.avatar,
       isActive: user.isActive,
-      createdAt: user.createdAt
+      createdAt: user.createdAt,
+      profileCreated: profile ? true : false
     }
   });
 });

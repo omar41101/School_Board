@@ -26,7 +26,9 @@ exports.createGrade = asyncHandler(async (req, res) => {
 });
 
 exports.updateGrade = asyncHandler(async (req, res, next) => {
-  const grade = await Grade.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  const { _id, createdAt, updatedAt, percentage, grade: gradeValue, ...updateData } = req.body;
+  
+  const grade = await Grade.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
   if (!grade) return next(new AppError('Grade not found', 404));
   res.status(200).json({ status: 'success', data: { grade } });
 });

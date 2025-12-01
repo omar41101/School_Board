@@ -25,7 +25,9 @@ exports.createPayment = asyncHandler(async (req, res) => {
 });
 
 exports.updatePayment = asyncHandler(async (req, res, next) => {
-  const payment = await Payment.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  const { _id, createdAt, updatedAt, receiptNumber, isOverdue, ...updateData } = req.body;
+  
+  const payment = await Payment.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
   if (!payment) return next(new AppError('Payment not found', 404));
   res.status(200).json({ status: 'success', data: { payment } });
 });

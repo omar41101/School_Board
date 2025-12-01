@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  # MongoDB Database - Optimized for dev speed and low storage
+  mongodb:
+    image: mongo:7.0
+    container_name: school_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: school_management
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - school_network
+    # Fast health check
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    # Optimize MongoDB for dev - save storage and RAM
+    command: [
+      "--storageEngine", "wiredTiger",
+      "--wiredTigerCacheSizeGB", "0.5",
+      "--nojournal"
+    ]
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # Backend API Server - Optimized for speed
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development  # Use development stage
+      cache_from:
+        - school_backend:latest
+    image: school_backend:dev
+    container_name: school_backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+      - "9229:9229"
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+      MONGODB_URI: mongodb://mongodb:27017/school_management
+      JWT_SECRET: b76a48f638e1949fa3013a9e6c360017
+      JWT_EXPIRE: 7d
+      CLIENT_URL: http://localhost:3000
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - school_network
+    volumes:
+      # Shared node_modules volume - persist across rebuilds
+      - node_modules:/app/node_modules
+      # Mount only source code for hot reload
+      - ./src:/app/src:cached
+      - ./logs:/app/logs
+    # Optimized resources for dev
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  # MongoDB Express - Disabled to save resources (uncomment if needed)
+  # mongo-express:
+  #   image: mongo-express:latest
+  #   container_name: school_mongo_express
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8081:8081"
+  #   environment:
+  #     ME_CONFIG_MONGODB_URL: mongodb://mongodb:27017/
+  #     ME_CONFIG_BASICAUTH: false
+  #   depends_on:
+  #     - mongodb
+  #   networks:
+  #     - school_network
+
+networks:
+  school_network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local
+  node_modules:
+    driver: local  # Shared across rebuilds - saves time and storage

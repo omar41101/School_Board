@@ -26,7 +26,9 @@ exports.createOrder = asyncHandler(async (req, res) => {
 });
 
 exports.updateOrder = asyncHandler(async (req, res, next) => {
-  const order = await Cantine.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  const { _id, createdAt, updatedAt, totalAmount, ...updateData } = req.body;
+  
+  const order = await Cantine.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
   if (!order) return next(new AppError('Order not found', 404));
   res.status(200).json({ status: 'success', data: { order } });
 });

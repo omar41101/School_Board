@@ -87,7 +87,8 @@ router.use(protect);
  *       404:
  *         description: Student not found
  *   put:
- *     summary: Update student
+ *     summary: Update student and their user information
+ *     description: Updates student-specific fields and can also update associated user fields (firstName, lastName, email, phone, avatar) in a single request
  *     tags: [Students]
  *     security:
  *       - bearerAuth: []
@@ -102,10 +103,62 @@ router.use(protect);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Student'
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 description: Update user's first name
+ *               lastName:
+ *                 type: string
+ *                 description: Update user's last name
+ *               email:
+ *                 type: string
+ *                 description: Update user's email
+ *               phone:
+ *                 type: string
+ *                 description: Update user's phone number
+ *               avatar:
+ *                 type: string
+ *                 description: Update user's avatar URL
+ *               matricule:
+ *                 type: string
+ *               dateOfBirth:
+ *                 type: string
+ *                 format: date
+ *               gender:
+ *                 type: string
+ *                 enum: [male, female]
+ *               level:
+ *                 type: string
+ *               className:
+ *                 type: string
+ *               address:
+ *                 $ref: '#/components/schemas/Address'
+ *               parent:
+ *                 type: string
+ *                 description: Parent ID
+ *               medicalInfo:
+ *                 $ref: '#/components/schemas/MedicalInfo'
+ *               emergencyContact:
+ *                 $ref: '#/components/schemas/EmergencyContact'
+ *               previousSchool:
+ *                 $ref: '#/components/schemas/PreviousSchool'
+ *               documents:
+ *                 type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/Document'
+ *               status:
+ *                 type: string
+ *                 enum: [active, inactive, suspended, graduated]
+ *           example:
+ *             firstName: "Emma"
+ *             lastName: "Wilson"
+ *             email: "emma.wilson@student.school.com"
+ *             level: "Grade 11"
+ *             className: "11-A"
  *     responses:
  *       200:
- *         description: Student updated
+ *         description: Student and user information updated successfully
  *       404:
  *         description: Student not found
  *   delete:

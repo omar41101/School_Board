@@ -26,7 +26,9 @@ exports.createEvent = asyncHandler(async (req, res) => {
 });
 
 exports.updateEvent = asyncHandler(async (req, res, next) => {
-  const event = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  const { _id, createdAt, updatedAt, participantCount, ...updateData } = req.body;
+  
+  const event = await Event.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
   if (!event) return next(new AppError('Event not found', 404));
   res.status(200).json({ status: 'success', data: { event } });
 });

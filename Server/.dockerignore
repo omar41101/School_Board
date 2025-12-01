@@ -1,0 +1,29 @@
+# Docker ignore patterns
+node_modules
+npm-debug.log
+.env
+.git
+.gitignore
+*.md
+!README.md
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+logs
+*.log
+
+# Documentation files
+API_STATUS_REPORT.md
+QA_TESTING_GUIDE.md
+QA_QUICK_START.md
+TICKET_2_COMPLETION.md
+postman_collection.json
+
+# Test files
+tests
+*.test.js
+*.spec.js
+coverage

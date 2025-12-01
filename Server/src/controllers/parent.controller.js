@@ -19,7 +19,9 @@ exports.createParent = asyncHandler(async (req, res) => {
 });
 
 exports.updateParent = asyncHandler(async (req, res, next) => {
-  const parent = await Parent.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  const { _id, createdAt, updatedAt, ...updateData } = req.body;
+  
+  const parent = await Parent.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
   if (!parent) return next(new AppError('Parent not found', 404));
   res.status(200).json({ status: 'success', data: { parent } });
 });

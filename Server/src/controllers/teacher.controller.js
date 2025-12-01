@@ -19,7 +19,9 @@ exports.createTeacher = asyncHandler(async (req, res) => {
 });
 
 exports.updateTeacher = asyncHandler(async (req, res, next) => {
-  const teacher = await Teacher.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  const { _id, createdAt, updatedAt, ...updateData } = req.body;
+  
+  const teacher = await Teacher.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
   if (!teacher) return next(new AppError('Teacher not found', 404));
   res.status(200).json({ status: 'success', data: { teacher } });
 });
