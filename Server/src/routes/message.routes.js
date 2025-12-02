@@ -1,13 +1,21 @@
 const express = require('express');
-const { getAllMessages, getMessageById, sendMessage, markAsRead, deleteMessage } = require('../controllers/message.controller');
-const { protect } = require('../middleware/auth.middleware');
+const { getAllMessages, getMessageById, createMessage, updateMessage, deleteMessage, sendMessage, markAsRead } = require('../controllers/message.controller');
+const { protect, authorize } = require('../middleware/auth.middleware');
+const { optionalApiKey } = require('../middleware/apiKey.middleware');
+const { validate } = require('../middleware/validator.middleware');
+const {
+  createMessageValidation,
+  updateMessageValidation,
+  messageIdValidation
+} = require('../middleware/validators/message.validators');
 
 const router = express.Router();
+router.use(optionalApiKey);
 router.use(protect);
 
 /**
  * @swagger
- * /api/messages:
+ * /api/v0/messages:
  *   get:
  *     summary: Get all messages
  *     tags: [Messages]
@@ -77,7 +85,7 @@ router.use(protect);
 
 /**
  * @swagger
- * /api/messages/{id}:
+ * /api/v0/messages/{id}:
  *   get:
  *     summary: Get message by ID
  *     tags: [Messages]
@@ -129,7 +137,7 @@ router.use(protect);
 
 /**
  * @swagger
- * /api/messages/{id}/read:
+ * /api/v0/messages/{id}/read:
  *   patch:
  *     summary: Mark message as read
  *     tags: [Messages]

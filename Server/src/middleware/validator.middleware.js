@@ -1,17 +1,25 @@
 const { validationResult } = require('express-validator');
+const { ValidationError } = require('../utils/errorHandler');
 
-// Middleware to handle validation errors
+/**
+ * Enhanced Validation Middleware
+ * Handles express-validator errors and formats them consistently
+ */
 exports.validate = (req, res, next) => {
   const errors = validationResult(req);
   
   if (!errors.isEmpty()) {
-    return res.status(400).json({
-      status: 'fail',
-      errors: errors.array().map(err => ({
-        field: err.path,
-        message: err.msg
-      }))
-    });
+    const formattedErrors = errors.array().map(err => ({
+      field: err.path || err.param,
+      message: err.msg,
+      value: err.value
+    }));
+
+    // Use new ValidationError class with details
+    return next(new ValidationError(
+      `Validation failed for ${formattedErrors.length} field(s)`,
+      formattedErrors
+    ));
   }
   
   next();

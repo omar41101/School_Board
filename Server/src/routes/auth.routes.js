@@ -1,5 +1,4 @@
 const express = require('express');
-const { body } = require('express-validator');
 const {
   register,
   login,
@@ -10,12 +9,17 @@ const {
 const { protect } = require('../middleware/auth.middleware');
 const { validate } = require('../middleware/validator.middleware');
 const { authLimiter } = require('../middleware/rateLimiter.middleware');
+const { 
+  registerValidation,
+  loginValidation,
+  updatePasswordValidation 
+} = require('../middleware/validators/auth.validators');
 
 const router = express.Router();
 
 /**
  * @swagger
- * /api/auth/register:
+ * /api/v0/auth/register:
  *   post:
  *     summary: Register a new user
  *     tags: [Authentication]
@@ -96,7 +100,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/auth/login:
+ * /api/v0/auth/login:
  *   post:
  *     summary: Login user
  *     tags: [Authentication]
@@ -123,7 +127,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/auth/me:
+ * /api/v0/auth/me:
  *   get:
  *     summary: Get current logged in user
  *     tags: [Authentication]
@@ -138,7 +142,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/auth/update-password:
+ * /api/v0/auth/update-password:
  *   put:
  *     summary: Update user password
  *     tags: [Authentication]
@@ -167,7 +171,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/auth/logout:
+ * /api/v0/auth/logout:
  *   post:
  *     summary: Logout user
  *     tags: [Authentication]
@@ -177,25 +181,6 @@ const router = express.Router();
  *       200:
  *         description: Logout successful
  */
-
-// Validation rules
-const registerValidation = [
-  body('firstName').trim().notEmpty().withMessage('First name is required'),
-  body('lastName').trim().notEmpty().withMessage('Last name is required'),
-  body('email').isEmail().withMessage('Please provide a valid email'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-  body('role').optional().isIn(['admin', 'student', 'teacher', 'parent', 'direction'])
-];
-
-const loginValidation = [
-  body('email').isEmail().withMessage('Please provide a valid email'),
-  body('password').notEmpty().withMessage('Password is required')
-];
-
-const updatePasswordValidation = [
-  body('currentPassword').notEmpty().withMessage('Current password is required'),
-  body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters')
-];
 
 // Routes
 router.post('/register', registerValidation, validate, register);

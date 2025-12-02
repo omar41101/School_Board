@@ -1,13 +1,21 @@
 const express = require('express');
 const { getAllTeachers, getTeacherById, createTeacher, updateTeacher, deleteTeacher } = require('../controllers/teacher.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
+const { optionalApiKey } = require('../middleware/apiKey.middleware');
+const { validate } = require('../middleware/validator.middleware');
+const {
+  createTeacherValidation,
+  updateTeacherValidation,
+  teacherIdValidation
+} = require('../middleware/validators/teacher.validators');
 
 const router = express.Router();
+router.use(optionalApiKey);
 router.use(protect);
 
 /**
  * @swagger
- * /api/teachers:
+ * /api/v0/teachers:
  *   get:
  *     summary: Get all teachers
  *     tags: [Teachers]
@@ -78,7 +86,7 @@ router.use(protect);
 
 /**
  * @swagger
- * /api/teachers/{id}:
+ * /api/v0/teachers/{id}:
  *   get:
  *     summary: Get teacher by ID
  *     tags: [Teachers]

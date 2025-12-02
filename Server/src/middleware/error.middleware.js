@@ -1,60 +1,164 @@
-// Custom error class
-class AppError extends Error {
-  constructor(message, statusCode) {
-    super(message);
-    this.statusCode = statusCode;
-    this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';
-    this.isOperational = true;
+const { AppError } = require('../utils/errorHandler');
 
-    Error.captureStackTrace(this, this.constructor);
-  }
-}
+/**
+ * Enhanced Error Logger
+ * Logs errors with context, severity, and timestamps
+ */
+const logError = (err, req) => {
+  const errorLog = {
+    timestamp: new Date().toISOString(),
+    method: req.method,
+    url: req.originalUrl,
+    ip: req.ip,
+    user: req.user ? req.user.id : 'unauthenticated',
+    error: {
+      name: err.name,
+      message: err.message,
+      statusCode: err.statusCode,
+      isOperational: err.isOperational,
+    }
+  };
 
-// Error handling middleware
-const errorHandler = (err, req, res, next) => {
-  let error = { ...err };
-  error.message = err.message;
-
-  // Log error for dev
+  // Color-coded console logging
   if (process.env.NODE_ENV === 'development') {
-    console.error(err);
+    console.error('\n🔴 ERROR OCCURRED:');
+    console.error('─'.repeat(50));
+    console.error(`📍 URL: ${errorLog.method} ${errorLog.url}`);
+    console.error(`👤 User: ${errorLog.user}`);
+    console.error(`⚠️  Type: ${err.name}`);
+    console.error(`💬 Message: ${err.message}`);
+    if (err.details) console.error(`📝 Details:`, err.details);
+    console.error(`📊 Status: ${err.statusCode || 500}`);
+    if (err.stack) console.error(`🔍 Stack:\n${err.stack}`);
+    console.error('─'.repeat(50) + '\n');
+  } else {
+    // Production: log to file/service (implement later)
+    console.error(JSON.stringify(errorLog));
   }
+};
 
-  // Mongoose bad ObjectId
-  if (err.name === 'CastError') {
-    const message = 'Resource not found';
-    error = new AppError(message, 404);
-  }
+/**
+ * Handle Mongoose CastError (Invalid ObjectId)
+ */
+const handleCastError = (err) => {
+  const message = `Invalid ${err.path}: ${err.value}`;
+  return new AppError(message, 400);
+};
 
-  // Mongoose duplicate key
-  if (err.code === 11000) {
-    const field = Object.keys(err.keyValue)[0];
-    const message = `${field} already exists`;
-    error = new AppError(message, 400);
-  }
+/**
+ * Handle Mongoose Duplicate Key Error
+ */
+const handleDuplicateKeyError = (err) => {
+  const field = Object.keys(err.keyValue)[0];
+  const value = err.keyValue[field];
+  const message = `${field} '${value}' already exists. Please use another value.`;
+  return new AppError(message, 409, { field, value });
+};
 
-  // Mongoose validation error
-  if (err.name === 'ValidationError') {
-    const message = Object.values(err.errors).map(val => val.message).join(', ');
-    error = new AppError(message, 400);
-  }
+/**
+ * Handle Mongoose Validation Error
+ */
+const handleValidationError = (err) => {
+  const errors = Object.values(err.errors).map(el => ({
+    field: el.path,
+    message: el.message,
+    value: el.value
+  }));
+  const message = `Invalid input data. ${errors.length} error(s) found.`;
+  return new AppError(message, 400, { errors });
+};
 
-  // JWT errors
-  if (err.name === 'JsonWebTokenError') {
-    const message = 'Invalid token. Please log in again';
-    error = new AppError(message, 401);
-  }
+/**
+ * Handle JWT Invalid Token
+ */
+const handleJWTError = () => {
+  return new AppError('Invalid token. Please log in again.', 401);
+};
 
-  if (err.name === 'TokenExpiredError') {
-    const message = 'Token expired. Please log in again';
-    error = new AppError(message, 401);
-  }
+/**
+ * Handle JWT Expired Token
+ */
+const handleJWTExpiredError = () => {
+  return new AppError('Your session has expired. Please log in again.', 401);
+};
 
-  res.status(error.statusCode || 500).json({
-    status: error.status || 'error',
-    message: error.message || 'Server Error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+/**
+ * Send Error Response in Development
+ */
+const sendErrorDev = (err, req, res) => {
+  res.status(err.statusCode || 500).json({
+    status: err.status || 'error',
+    message: err.message,
+    error: err,
+    details: err.details,
+    stack: err.stack,
+    timestamp: err.timestamp || new Date().toISOString()
   });
 };
 
-module.exports = { AppError, errorHandler };
+/**
+ * Send Error Response in Production
+ */
+const sendErrorProd = (err, req, res) => {
+  // Operational, trusted error: send message to client
+  if (err.isOperational) {
+    res.status(err.statusCode).json({
+      status: err.status,
+      message: err.message,
+      ...(err.details && { details: err.details }),
+      timestamp: err.timestamp || new Date().toISOString()
+    });
+  } 
+  // Programming or unknown error: don't leak error details
+  else {
+    console.error('💥 NON-OPERATIONAL ERROR:', err);
+    res.status(500).json({
+      status: 'error',
+      message: 'Something went wrong. Please try again later.',
+      timestamp: new Date().toISOString()
+    });
+  }
+};
+
+/**
+ * Global Error Handling Middleware
+ */
+const errorHandler = (err, req, res, next) => {
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || 'error';
+
+  // Log the error
+  logError(err, req);
+
+  let error = { ...err };
+  error.message = err.message;
+  error.name = err.name;
+
+  // Handle specific error types
+  if (err.name === 'CastError') error = handleCastError(err);
+  if (err.code === 11000) error = handleDuplicateKeyError(err);
+  if (err.name === 'ValidationError') error = handleValidationError(err);
+  if (err.name === 'JsonWebTokenError') error = handleJWTError();
+  if (err.name === 'TokenExpiredError') error = handleJWTExpiredError();
+
+  // Send response based on environment
+  if (process.env.NODE_ENV === 'development') {
+    sendErrorDev(error, req, res);
+  } else {
+    sendErrorProd(error, req, res);
+  }
+};
+
+/**
+ * 404 Not Found Handler
+ */
+const notFoundHandler = (req, res, next) => {
+  const error = new AppError(`Route ${req.originalUrl} not found`, 404);
+  next(error);
+};
+
+module.exports = { 
+  errorHandler, 
+  notFoundHandler,
+  logError 
+};

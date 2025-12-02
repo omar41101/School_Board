@@ -1,13 +1,21 @@
 const express = require('express');
 const { getAllParents, getParentById, createParent, updateParent, deleteParent } = require('../controllers/parent.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
+const { optionalApiKey } = require('../middleware/apiKey.middleware');
+const { validate } = require('../middleware/validator.middleware');
+const {
+  createParentValidation,
+  updateParentValidation,
+  parentIdValidation
+} = require('../middleware/validators/parent.validators');
 
 const router = express.Router();
+router.use(optionalApiKey);
 router.use(protect);
 
 /**
  * @swagger
- * /api/parents:
+ * /api/v0/parents:
  *   get:
  *     summary: Get all parents
  *     tags: [Parents]
@@ -64,7 +72,7 @@ router.use(protect);
 
 /**
  * @swagger
- * /api/parents/{id}:
+ * /api/v0/parents/{id}:
  *   get:
  *     summary: Get parent by ID
  *     tags: [Parents]

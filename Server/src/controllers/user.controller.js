@@ -82,6 +82,37 @@ exports.updateUser = asyncHandler(async (req, res, next) => {
   });
 });
 
+// @desc    Update own user profile
+// @route   PUT /api/v0/users/me
+// @access  Private (Any authenticated user can update their own profile)
+exports.updateUserBySelf = asyncHandler(async (req, res, next) => {
+  // Remove immutable fields from update - users cannot change role, isActive, password via this endpoint
+  const { password, _id, role, isActive, createdAt, updatedAt, ...updateData } = req.body;  
+  
+  // Prevent empty updates
+  if (Object.keys(updateData).length === 0) {
+    return next(new AppError('No valid fields to update', 400));
+  }
+  
+  const user = await User.findByIdAndUpdate(
+    req.user.id, // Use authenticated user's ID
+    updateData,
+    {
+      new: true,
+      runValidators: true
+    }
+  ).select('-password');
+
+  if (!user) {
+    return next(new AppError('User not found', 404));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: { user }
+  });
+});
+
 // @desc    Delete user
 // @route   DELETE /api/users/:id
 // @access  Private/Admin

@@ -5,7 +5,7 @@ const options = {
     openapi: '3.0.0',
     info: {
       title: 'School Management ERP API',
-      version: '1.0.0',
+      version: '0.1.0',
       description: 'Comprehensive MERN stack backend API for school management system with role-based access control',
       contact: {
         name: 'API Support',

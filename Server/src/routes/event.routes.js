@@ -1,13 +1,21 @@
 const express = require('express');
 const { getAllEvents, getEventById, createEvent, updateEvent, deleteEvent, joinEvent } = require('../controllers/event.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
+const { optionalApiKey } = require('../middleware/apiKey.middleware');
+const { validate } = require('../middleware/validator.middleware');
+const {
+  createEventValidation,
+  updateEventValidation,
+  eventIdValidation
+} = require('../middleware/validators/event.validators');
 
 const router = express.Router();
+router.use(optionalApiKey);
 router.use(protect);
 
 /**
  * @swagger
- * /api/events:
+ * /api/v0/events:
  *   get:
  *     summary: Get all events
  *     tags: [Events]
@@ -82,7 +90,7 @@ router.use(protect);
 
 /**
  * @swagger
- * /api/events/{id}:
+ * /api/v0/events/{id}:
  *   get:
  *     summary: Get event by ID
  *     tags: [Events]
@@ -165,7 +173,7 @@ router.use(protect);
 
 /**
  * @swagger
- * /api/events/{id}/join:
+ * /api/v0/events/{id}/join:
  *   post:
  *     summary: Join an event
  *     tags: [Events]

@@ -1,13 +1,21 @@
 const express = require('express');
-const { getAllPayments, getPaymentById, createPayment, updatePayment, markAsPaid } = require('../controllers/payment.controller');
+const { getAllPayments, getPaymentById, createPayment, updatePayment, deletePayment, markAsPaid } = require('../controllers/payment.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
+const { optionalApiKey } = require('../middleware/apiKey.middleware');
+const { validate } = require('../middleware/validator.middleware');
+const {
+  createPaymentValidation,
+  updatePaymentValidation,
+  paymentIdValidation
+} = require('../middleware/validators/payment.validators');
 
 const router = express.Router();
+router.use(optionalApiKey);
 router.use(protect);
 
 /**
  * @swagger
- * /api/payments:
+ * /api/v0/payments:
  *   get:
  *     summary: Get all payments
  *     tags: [Payments]
@@ -81,7 +89,7 @@ router.use(protect);
 
 /**
  * @swagger
- * /api/payments/{id}:
+ * /api/v0/payments/{id}:
  *   get:
  *     summary: Get payment by ID
  *     tags: [Payments]
@@ -143,7 +151,7 @@ router.use(protect);
 
 /**
  * @swagger
- * /api/payments/{id}/mark-paid:
+ * /api/v0/payments/{id}/mark-paid:
  *   patch:
  *     summary: Mark payment as paid
  *     tags: [Payments]

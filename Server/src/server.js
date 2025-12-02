@@ -28,7 +28,7 @@ const eventRoutes = require('./routes/event.routes');
 const cantineRoutes = require('./routes/cantine.routes');
 
 // Import middleware
-const { errorHandler } = require('./middleware/error.middleware');
+const { errorHandler, notFoundHandler } = require('./middleware/error.middleware');
 const { limiter } = require('./middleware/rateLimiter.middleware');
 
 // Security middleware
@@ -78,28 +78,23 @@ app.get('/api-docs.json', (req, res) => {
   res.send(swaggerSpec);
 });
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/students', studentRoutes);
-app.use('/api/teachers', teacherRoutes);
-app.use('/api/parents', parentRoutes);
-app.use('/api/courses', courseRoutes);
-app.use('/api/grades', gradeRoutes);
-app.use('/api/assignments', assignmentRoutes);
-app.use('/api/attendance', attendanceRoutes);
-app.use('/api/payments', paymentRoutes);
-app.use('/api/messages', messageRoutes);
-app.use('/api/events', eventRoutes);
-app.use('/api/cantine', cantineRoutes);
+// API Routes - v0
+app.use('/api/v0/auth', authRoutes);
+app.use('/api/v0/users', userRoutes);
+app.use('/api/v0/students', studentRoutes);
+app.use('/api/v0/teachers', teacherRoutes);
+app.use('/api/v0/parents', parentRoutes);
+app.use('/api/v0/courses', courseRoutes);
+app.use('/api/v0/grades', gradeRoutes);
+app.use('/api/v0/assignments', assignmentRoutes);
+app.use('/api/v0/attendance', attendanceRoutes);
+app.use('/api/v0/payments', paymentRoutes);
+app.use('/api/v0/messages', messageRoutes);
+app.use('/api/v0/events', eventRoutes);
+app.use('/api/v0/cantine', cantineRoutes);
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    status: 'error',
-    message: `Route ${req.originalUrl} not found`
-  });
-});
+// 404 handler - must come after all routes
+app.use(notFoundHandler);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);

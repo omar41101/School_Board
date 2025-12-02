@@ -1,13 +1,21 @@
 const express = require('express');
-const { getAllAttendance, createAttendance, updateAttendance, deleteAttendance } = require('../controllers/attendance.controller');
+const { getAllAttendance, getAttendanceById, createAttendance, updateAttendance, deleteAttendance } = require('../controllers/attendance.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
+const { optionalApiKey } = require('../middleware/apiKey.middleware');
+const { validate } = require('../middleware/validator.middleware');
+const {
+  createAttendanceValidation,
+  updateAttendanceValidation,
+  attendanceIdValidation
+} = require('../middleware/validators/attendance.validators');
 
 const router = express.Router();
+router.use(optionalApiKey);
 router.use(protect);
 
 /**
  * @swagger
- * /api/attendance:
+ * /api/v0/attendance:
  *   get:
  *     summary: Get all attendance records
  *     tags: [Attendance]
@@ -86,7 +94,7 @@ router.use(protect);
 
 /**
  * @swagger
- * /api/attendance/{id}:
+ * /api/v0/attendance/{id}:
  *   put:
  *     summary: Update attendance record
  *     tags: [Attendance]

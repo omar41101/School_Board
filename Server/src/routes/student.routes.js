@@ -7,14 +7,22 @@ const {
   deleteStudent
 } = require('../controllers/student.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
+const { optionalApiKey } = require('../middleware/apiKey.middleware');
+const { validate } = require('../middleware/validator.middleware');
+const {
+  createStudentValidation,
+  updateStudentValidation,
+  studentIdValidation
+} = require('../middleware/validators/student.validators');
 
 const router = express.Router();
 
+router.use(optionalApiKey);
 router.use(protect);
 
 /**
  * @swagger
- * /api/students:
+ * /api/v0/students:
  *   get:
  *     summary: Get all students
  *     tags: [Students]
@@ -69,7 +77,7 @@ router.use(protect);
 
 /**
  * @swagger
- * /api/students/{id}:
+ * /api/v0/students/{id}:
  *   get:
  *     summary: Get student by ID
  *     tags: [Students]
@@ -181,11 +189,11 @@ router.use(protect);
 
 router.route('/')
   .get(getAllStudents)
-  .post(authorize('admin', 'direction'), createStudent);
+  .post(authorize('admin', 'direction'), createStudentValidation, validate, createStudent);
 
 router.route('/:id')
-  .get(getStudentById)
-  .put(authorize('admin', 'direction', 'teacher'), updateStudent)
-  .delete(authorize('admin'), deleteStudent);
+  .get(studentIdValidation, validate, getStudentById)
+  .put(authorize('admin', 'direction', 'teacher'), updateStudentValidation, validate, updateStudent)
+  .delete(authorize('admin'), studentIdValidation, validate, deleteStudent);
 
 module.exports = router;

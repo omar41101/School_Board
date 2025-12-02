@@ -1,13 +1,21 @@
 const express = require('express');
-const { getAllOrders, getOrderById, createOrder, updateOrder, cancelOrder } = require('../controllers/cantine.controller');
+const { getAllCantineOrders, getCantineOrderById, createCantineOrder, updateCantineOrder, deleteCantineOrder, cancelOrder, getOrderById, getAllOrders, createOrder, updateOrder } = require('../controllers/cantine.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
+const { optionalApiKey } = require('../middleware/apiKey.middleware');
+const { validate } = require('../middleware/validator.middleware');
+const {
+  createCantineValidation,
+  updateCantineValidation,
+  cantineIdValidation
+} = require('../middleware/validators/cantine.validators');
 
 const router = express.Router();
+router.use(optionalApiKey);
 router.use(protect);
 
 /**
  * @swagger
- * /api/cantine:
+ * /api/v0/cantine:
  *   get:
  *     summary: Get all cantine orders
  *     tags: [Cantine]
@@ -81,7 +89,7 @@ router.use(protect);
 
 /**
  * @swagger
- * /api/cantine/{id}:
+ * /api/v0/cantine/{id}:
  *   get:
  *     summary: Get cantine order by ID
  *     tags: [Cantine]
@@ -143,7 +151,7 @@ router.use(protect);
 
 /**
  * @swagger
- * /api/cantine/{id}/cancel:
+ * /api/v0/cantine/{id}/cancel:
  *   patch:
  *     summary: Cancel a cantine order
  *     tags: [Cantine]

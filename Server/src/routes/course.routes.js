@@ -1,13 +1,21 @@
 const express = require('express');
 const { getAllCourses, getCourseById, createCourse, updateCourse, deleteCourse, enrollStudent } = require('../controllers/course.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
+const { optionalApiKey } = require('../middleware/apiKey.middleware');
+const { validate } = require('../middleware/validator.middleware');
+const {
+  createCourseValidation,
+  updateCourseValidation,
+  courseIdValidation
+} = require('../middleware/validators/course.validators');
 
 const router = express.Router();
+router.use(optionalApiKey);
 router.use(protect);
 
 /**
  * @swagger
- * /api/courses:
+ * /api/v0/courses:
  *   get:
  *     summary: Get all courses
  *     tags: [Courses]
@@ -79,7 +87,7 @@ router.use(protect);
 
 /**
  * @swagger
- * /api/courses/{id}:
+ * /api/v0/courses/{id}:
  *   get:
  *     summary: Get course by ID
  *     tags: [Courses]
@@ -162,7 +170,7 @@ router.use(protect);
 
 /**
  * @swagger
- * /api/courses/{id}/enroll:
+ * /api/v0/courses/{id}/enroll:
  *   post:
  *     summary: Enroll a student in a course
  *     tags: [Courses]
@@ -200,8 +208,8 @@ router.use(protect);
  *         description: Forbidden - Admin or Direction only
  */
 
-router.route('/').get(getAllCourses).post(authorize('admin', 'direction', 'teacher'), createCourse);
-router.route('/:id').get(getCourseById).put(authorize('admin', 'direction', 'teacher'), updateCourse).delete(authorize('admin'), deleteCourse);
-router.post('/:id/enroll', authorize('admin', 'direction'), enrollStudent);
+router.route('/').get(getAllCourses).post(authorize('admin', 'direction', 'teacher'), createCourseValidation, validate, createCourse);
+router.route('/:id').get(courseIdValidation, validate, getCourseById).put(authorize('admin', 'direction', 'teacher'), updateCourseValidation, validate, updateCourse).delete(authorize('admin'), courseIdValidation, validate, deleteCourse);
+router.post('/:id/enroll', authorize('admin', 'direction'), courseIdValidation, validate, enrollStudent);
 
 module.exports = router;

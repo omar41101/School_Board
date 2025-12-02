@@ -4,18 +4,29 @@ const {
   getUserById,
   updateUser,
   deleteUser,
-  deactivateUser
+  deactivateUser,
+  updateUserBySelf
 } = require('../controllers/user.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
+const { optionalApiKey } = require('../middleware/apiKey.middleware');
+const { validate } = require('../middleware/validator.middleware');
+const {
+  updateUserValidation,
+  updateOwnProfileValidation,
+  userIdValidation
+} = require('../middleware/validators/user.validators');
 
 const router = express.Router();
+
+// Allow API key or JWT authentication
+router.use(optionalApiKey);
 
 // All routes require authentication
 router.use(protect);
 
 /**
  * @swagger
- * /api/users:
+ * /api/v0/users:
  *   get:
  *     summary: Get all users
  *     tags: [Users]
@@ -66,7 +77,7 @@ router.use(protect);
 
 /**
  * @swagger
- * /api/users/{id}:
+ * /api/v0/users/{id}:
  *   get:
  *     summary: Get user by ID
  *     tags: [Users]
@@ -147,7 +158,43 @@ router.use(protect);
 
 /**
  * @swagger
- * /api/users/{id}/deactivate:
+ * /api/v0/users/me:
+ *   put:
+ *     summary: Update own user profile
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *               lastName:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               avatar:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User profile updated successfully
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: User not found
+ *       401:
+ *         description: Unauthorized
+ */
+
+/**
+ * @swagger
+ * /api/v0/users/{id}/deactivate:
  *   patch:
  *     summary: Deactivate user account
  *     tags: [Users]
@@ -174,11 +221,14 @@ router.use(protect);
 router.route('/')
   .get(authorize('admin', 'direction'), getAllUsers);
 
-router.route('/:id')
-  .get(getUserById)
-  .put(updateUser)
-  .delete(authorize('admin'), deleteUser);
+router.route('/me')
+  .put(updateOwnProfileValidation, validate, updateUserBySelf);
 
-router.patch('/:id/deactivate', authorize('admin'), deactivateUser);
+router.route('/:id')
+  .get(userIdValidation, validate, getUserById)
+  .put(authorize('admin', 'direction'), updateUserValidation, validate, updateUser)
+  .delete(authorize('admin'), userIdValidation, validate, deleteUser);
+
+router.patch('/:id/deactivate', authorize('admin'), userIdValidation, validate, deactivateUser);
 
 module.exports = router;

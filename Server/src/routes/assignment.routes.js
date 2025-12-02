@@ -1,13 +1,21 @@
 const express = require('express');
 const { getAllAssignments, getAssignmentById, createAssignment, updateAssignment, deleteAssignment, submitAssignment } = require('../controllers/assignment.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
+const { optionalApiKey } = require('../middleware/apiKey.middleware');
+const { validate } = require('../middleware/validator.middleware');
+const {
+  createAssignmentValidation,
+  updateAssignmentValidation,
+  assignmentIdValidation
+} = require('../middleware/validators/assignment.validators');
 
 const router = express.Router();
+router.use(optionalApiKey);
 router.use(protect);
 
 /**
  * @swagger
- * /api/assignments:
+ * /api/v0/assignments:
  *   get:
  *     summary: Get all assignments
  *     tags: [Assignments]
@@ -75,7 +83,7 @@ router.use(protect);
 
 /**
  * @swagger
- * /api/assignments/{id}:
+ * /api/v0/assignments/{id}:
  *   get:
  *     summary: Get assignment by ID
  *     tags: [Assignments]
@@ -158,7 +166,7 @@ router.use(protect);
 
 /**
  * @swagger
- * /api/assignments/{id}/submit:
+ * /api/v0/assignments/{id}/submit:
  *   post:
  *     summary: Submit an assignment
  *     tags: [Assignments]
@@ -201,8 +209,8 @@ router.use(protect);
  *         description: Forbidden - Students only
  */
 
-router.route('/').get(getAllAssignments).post(authorize('admin', 'teacher'), createAssignment);
-router.route('/:id').get(getAssignmentById).put(authorize('admin', 'teacher'), updateAssignment).delete(authorize('admin', 'teacher'), deleteAssignment);
-router.post('/:id/submit', authorize('student'), submitAssignment);
+router.route('/').get(getAllAssignments).post(authorize('admin', 'teacher'), createAssignmentValidation, validate, createAssignment);
+router.route('/:id').get(assignmentIdValidation, validate, getAssignmentById).put(authorize('admin', 'teacher'), updateAssignmentValidation, validate, updateAssignment).delete(authorize('admin', 'teacher'), assignmentIdValidation, validate, deleteAssignment);
+router.post('/:id/submit', authorize('student'), assignmentIdValidation, validate, submitAssignment);
 
 module.exports = router;

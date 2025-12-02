@@ -1,13 +1,21 @@
 const express = require('express');
 const { getAllGrades, getGradeById, createGrade, updateGrade, deleteGrade } = require('../controllers/grade.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
+const { optionalApiKey } = require('../middleware/apiKey.middleware');
+const { validate } = require('../middleware/validator.middleware');
+const {
+  createGradeValidation,
+  updateGradeValidation,
+  gradeIdValidation
+} = require('../middleware/validators/grade.validators');
 
 const router = express.Router();
+router.use(optionalApiKey);
 router.use(protect);
 
 /**
  * @swagger
- * /api/grades:
+ * /api/v0/grades:
  *   get:
  *     summary: Get all grades
  *     tags: [Grades]
@@ -79,7 +87,7 @@ router.use(protect);
 
 /**
  * @swagger
- * /api/grades/{id}:
+ * /api/v0/grades/{id}:
  *   get:
  *     summary: Get grade by ID
  *     tags: [Grades]
