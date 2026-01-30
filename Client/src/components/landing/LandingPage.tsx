@@ -1,34 +1,22 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { LandingHeader } from './LandingHeader';
 import { HeroSection } from './HeroSection';
 import { AboutSection } from './AboutSection';
-import { AuthModal } from '../auth/AuthModal';
-
-
-interface LandingPageProps {
-  onAuthSuccess: () => void;
-}
-
-export function LandingPage({ onAuthSuccess }: LandingPageProps) {
-  const [currentLang, setCurrentLang] = useState<'ar' | 'fr' | 'en'>('en');
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [isDark, setIsDark] = useState(false);
+ 
+export function LandingPage() {
+  const navigate = useNavigate();
+  const [currentLang] = useState<'ar' | 'fr' | 'en'>('en');
 
   useEffect(() => {
     // Check system preference for dark mode
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setIsDark(prefersDark);
     document.documentElement.classList.toggle('dark', prefersDark);
   }, []);
 
   const handleJoinPlatform = () => {
-    setShowLoginModal(true);
-  };
-
-  const handleLoginSuccess = (userType: 'admin' | 'student', userData: any) => {
-    setShowLoginModal(false);
-    onAuthSuccess();
+    navigate('/login');
   };
 
   return (
@@ -43,14 +31,6 @@ export function LandingPage({ onAuthSuccess }: LandingPageProps) {
       <LandingHeader 
         onJoinPlatform={handleJoinPlatform}
         isLoading={false}
-      />
-
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-        onAuthSuccess={handleLoginSuccess}
-        currentLang={currentLang}
       />
 
       {/* Page Content */}

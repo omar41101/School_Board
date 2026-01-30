@@ -1,55 +1,42 @@
-/**
- * Protected Route Component
- * Handles authentication and role-based access control
- */
-
-import { ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAppSelector } from '../../store/hooks';
-import { UserRole } from '../../services/authService';
 import { Loader2 } from 'lucide-react';
+import type { User } from '../../types';
 
 interface ProtectedRouteProps {
-  children: ReactNode;
-  allowedRoles?: UserRole[];
-  requireAuth?: boolean;
+  allowedRoles?: Array<'admin' | 'student' | 'teacher' | 'parent' | 'direction'>;
+  children?: React.ReactNode;
 }
 
-export function ProtectedRoute({ 
-  children, 
-  allowedRoles, 
-  requireAuth = true 
-}: ProtectedRouteProps) {
+export function ProtectedRoute({ allowedRoles, children }: ProtectedRouteProps) {
   const location = useLocation();
-  const { user, isAuthenticated, loading } = useAppSelector((state) => state.auth);
-  const isInitialized = useAppSelector((state) => state.auth.isInitialized || false);
+  const { user, isAuthenticated, loading, isInitialized } = useAppSelector((state) => state.auth);
 
-  // Show loading while initializing
+  // Show loading while checking auth
   if (!isInitialized || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-[#3E92CC]" />
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-[#0D1B2A]">
+        <div className="text-center">
+          <Loader2 className="h-16 w-16 animate-spin text-[#3E92CC] mx-auto mb-4" />
           <p className="text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
     );
   }
 
-  // Redirect to login if authentication is required but user is not authenticated
-  if (requireAuth && !isAuthenticated) {
-    return <Navigate to="/" state={{ from: location }} replace />;
+  // Redirect to login if not authenticated
+  if (!isAuthenticated || !user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Redirect to dashboard if user is authenticated but trying to access public routes
-  if (!requireAuth && isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
+  // Get user role (handle both User type and authService User type)
+  const userRole = (user as User).role || (user as { role: string }).role;
+  const userRoleString = typeof userRole === 'string' ? userRole : 'student';
 
   // Check role-based access
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+  if (allowedRoles && !allowedRoles.includes(userRoleString as 'admin' | 'student' | 'teacher' | 'parent' | 'direction')) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-screen">
         <div className="text-center space-y-4 p-8">
           <div className="text-6xl">🔒</div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Access Denied</h1>
@@ -67,5 +54,5 @@ export function ProtectedRoute({
     );
   }
 
-  return <>{children}</>;
+  return children ? <>{children}</> : <Outlet />;
 }

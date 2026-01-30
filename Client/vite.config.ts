@@ -57,5 +57,12 @@
     server: {
       port: 3000,
       open: true,
+    proxy: {
+      // Allow VITE_API_URL=http://localhost:3000/api (proxied to Nest on :5000)
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+    },
     },
   });

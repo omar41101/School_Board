@@ -1,145 +1,117 @@
- import { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from './store/hooks';
-import { initializeAuth, logoutUser } from './store/slices/authSlice.v2';
+import { initializeAuth } from './store/slices/authSlice.v2';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { LoginPage } from './components/auth/LoginPage';
 import { LandingPage } from './components/landing/LandingPage';
 import { StudentDashboard } from './components/dashboard/StudentDashboard';
 import { TeacherDashboard } from './components/dashboard/TeacherDashboard';
 import { ParentDashboard } from './components/dashboard/ParentDashboard';
-import { Loader2 } from 'lucide-react';
-
-function AppContent() {
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const { user, isAuthenticated, loading: authLoading, isInitialized } = useAppSelector((state) => state.auth);
-  const [currentView, setCurrentView] = useState('overview');
-
-  // Initialize authentication on mount
-  useEffect(() => {
-    dispatch(initializeAuth());
-  }, [dispatch]);
-
-  // Handle authentication success
-  const handleAuthSuccess = () => {
-    navigate('/dashboard');
-  };
-
-  // Handle logout
-  const handleLogout = () => {
-    dispatch(logoutUser());
-    setCurrentView('overview');
-    navigate('/');
-  };
-
-  // Handle navigation
-  const handleNavigate = (path: string) => {
-    setCurrentView(path.replace('/', '') || 'overview');
-  };
-
-  // Show loading spinner during initialization
-  if (!isInitialized || authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-[#0D1B2A]">
-        <div className="text-center">
-          <Loader2 className="h-16 w-16 animate-spin text-[#3E92CC] mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <Routes>
-      {/* Public Routes */}
-      <Route 
-        path="/" 
-        element={
-          isAuthenticated ? (
-            <Navigate to="/dashboard" replace />
-          ) : (
-            <LandingPage onAuthSuccess={handleAuthSuccess} />
-          )
-        } 
-      />
-
-      {/* Protected Dashboard Routes */}
-      <Route
-        path="/dashboard/*"
-        element={
-          !isAuthenticated ? (
-            <Navigate to="/" replace />
-          ) : user?.role === 'student' ? (
-            <StudentDashboard
-              currentUser={{
-                id: user._id,
-                name: `${user.firstName} ${user.lastName}`,
-                email: user.email,
-                avatar: '',
-                role: 'student'
-              }}
-              onNavigate={handleNavigate}
-              currentView={currentView}
-              onLogout={handleLogout}
-            />
-          ) : user?.role === 'teacher' ? (
-            <TeacherDashboard
-              currentUser={{
-                id: user._id,
-                name: `${user.firstName} ${user.lastName}`,
-                email: user.email,
-                avatar: '',
-                role: 'teacher'
-              }}
-              onNavigate={handleNavigate}
-              currentView={currentView}
-              onLogout={handleLogout}
-            />
-          ) : user?.role === 'parent' ? (
-            <ParentDashboard
-              currentUser={{
-                id: user._id,
-                name: `${user.firstName} ${user.lastName}`,
-                email: user.email,
-                avatar: '',
-                role: 'parent'
-              }}
-              onNavigate={handleNavigate}
-              currentView={currentView}
-              onLogout={handleLogout}
-            />
-          ) : user?.role === 'admin' || user?.role === 'direction' ? (
-            <TeacherDashboard
-              currentUser={{
-                id: user._id,
-                name: `${user.firstName} ${user.lastName}`,
-                email: user.email,
-                avatar: '',
-                role: 'teacher'
-              }}
-              onNavigate={handleNavigate}
-              currentView={currentView}
-              onLogout={handleLogout}
-            />
-          ) : (
-            <Navigate to="/" replace />
-          )
-        }
-      />
-
-      {/* Catch all - redirect to home */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  );
-}
+import { AdminDashboard } from './components/dashboard/AdminDashboard';
+import type { User } from './types';
 
 function App() {
+  const dispatch = useAppDispatch();
+  const { isInitialized } = useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (!isInitialized) {
+      dispatch(initializeAuth());
+    }
+  }, [dispatch, isInitialized]);
+
   return (
     <Router>
-      <AppContent />
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+
+        {/* Protected Student Routes */}
+        <Route
+          element={<ProtectedRoute allowedRoles={['student']} />}
+        >
+          <Route path="/student/dashboard" element={<StudentDashboard />} />
+          <Route path="/student/grades" element={<StudentDashboard view="grades" />} />
+          <Route path="/student/homework" element={<StudentDashboard view="homework" />} />
+          <Route path="/student/schedule" element={<StudentDashboard view="schedule" />} />
+          <Route path="/student/cantine" element={<StudentDashboard view="cantine" />} />
+        </Route>
+
+        {/* Protected Teacher Routes */}
+        <Route
+          element={<ProtectedRoute allowedRoles={['teacher']} />}
+        >
+          <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
+          <Route path="/teacher/classes" element={<TeacherDashboard view="classes" />} />
+          <Route path="/teacher/grades" element={<TeacherDashboard view="grades" />} />
+          <Route path="/teacher/schedule" element={<TeacherDashboard view="schedule" />} />
+        </Route>
+
+        {/* Protected Parent Routes */}
+        <Route
+          element={<ProtectedRoute allowedRoles={['parent']} />}
+        >
+          <Route path="/parent/dashboard" element={<ParentDashboard />} />
+          <Route path="/parent/progress" element={<ParentDashboard view="progress" />} />
+          <Route path="/parent/communication" element={<ParentDashboard view="communication" />} />
+        </Route>
+
+        {/* Protected Admin Routes */}
+        <Route
+          element={<ProtectedRoute allowedRoles={['admin', 'direction']} />}
+        >
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={<AdminDashboard view="users" />} />
+          <Route path="/admin/students" element={<AdminDashboard view="students" />} />
+          <Route path="/admin/teachers" element={<AdminDashboard view="teachers" />} />
+          <Route path="/admin/parents" element={<AdminDashboard view="parents" />} />
+          <Route path="/admin/courses" element={<AdminDashboard view="courses" />} />
+          <Route path="/admin/analytics" element={<AdminDashboard view="analytics" />} />
+          <Route path="/admin/settings" element={<AdminDashboard view="settings" />} />
+        </Route>
+
+        {/* Common Protected Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/courses" element={<StudentDashboard view="courses" />} />
+          <Route path="/events" element={<StudentDashboard view="events" />} />
+          <Route path="/messages" element={<StudentDashboard view="messages" />} />
+          <Route path="/payments" element={<StudentDashboard view="payments" />} />
+          <Route path="/profile" element={<StudentDashboard view="profile" />} />
+        </Route>
+
+        {/* Default redirect based on role */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <NavigateToRoleDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Catch all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </Router>
   );
 }
 
-export default App;
+function NavigateToRoleDashboard() {
+  const { user } = useAppSelector((state) => state.auth);
+  
+  if (!user) return <Navigate to="/login" replace />;
 
- 
+  const roleRoutes: Record<User['role'], string> = {
+    admin: '/admin/dashboard',
+    direction: '/admin/dashboard',
+    teacher: '/teacher/dashboard',
+    student: '/student/dashboard',
+    parent: '/parent/dashboard',
+  };
+
+  return <Navigate to={roleRoutes[user.role]} replace />;
+}
+
+export default App;

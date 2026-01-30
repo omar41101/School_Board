@@ -1,0 +1,321 @@
+import { GradesService } from './grades.service';
+import { CreateGradeDto } from './dto/create-grade.dto';
+import { UpdateGradeDto } from './dto/update-grade.dto';
+export declare class GradesController {
+    private readonly gradesService;
+    constructor(gradesService: GradesService);
+    findAll(query: any): Promise<{
+        status: string;
+        results: number;
+        data: {
+            grades: ({
+                student: {
+                    user: {
+                        firstName: string;
+                        lastName: string;
+                        id: number;
+                    };
+                } & {
+                    bloodGroup: string | null;
+                    allergies: import("@prisma/client/runtime/library").JsonValue | null;
+                    medicalConditions: import("@prisma/client/runtime/library").JsonValue | null;
+                    matricule: string;
+                    dateOfBirth: Date;
+                    gender: import(".prisma/client").$Enums.Gender;
+                    level: string;
+                    className: string;
+                    section: string | null;
+                    parentId: number | null;
+                    documents: import("@prisma/client/runtime/library").JsonValue | null;
+                    id: number;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    addressStreet: string | null;
+                    addressCity: string | null;
+                    addressState: string | null;
+                    addressZipCode: string | null;
+                    addressCountry: string | null;
+                    admissionDate: Date;
+                    status: import(".prisma/client").$Enums.StudentStatus;
+                    emergencyContactName: string | null;
+                    emergencyContactRelationship: string | null;
+                    emergencyContactPhone: string | null;
+                    previousSchoolName: string | null;
+                    previousSchoolYear: string | null;
+                    userId: number;
+                };
+                teacher: {
+                    user: {
+                        firstName: string;
+                        lastName: string;
+                        id: number;
+                    };
+                } & {
+                    dateOfBirth: Date;
+                    gender: import(".prisma/client").$Enums.Gender;
+                    employeeId: string;
+                    qualification: string;
+                    specialization: string;
+                    salary: import("@prisma/client/runtime/library").Decimal;
+                    subjects: import("@prisma/client/runtime/library").JsonValue | null;
+                    experience: number;
+                    classes: import("@prisma/client/runtime/library").JsonValue | null;
+                    schedule: import("@prisma/client/runtime/library").JsonValue | null;
+                    documents: import("@prisma/client/runtime/library").JsonValue | null;
+                    id: number;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    addressStreet: string | null;
+                    addressCity: string | null;
+                    addressState: string | null;
+                    addressZipCode: string | null;
+                    addressCountry: string | null;
+                    status: import(".prisma/client").$Enums.TeacherStatus;
+                    userId: number;
+                    joiningDate: Date;
+                };
+                course: {
+                    name: string;
+                    id: number;
+                    code: string;
+                };
+            } & {
+                grade: import(".prisma/client").$Enums.GradeLetter | null;
+                id: number;
+                createdAt: Date;
+                updatedAt: Date;
+                subject: string;
+                teacherId: number;
+                academicYear: string;
+                semester: import(".prisma/client").$Enums.Semester;
+                studentId: number;
+                courseId: number;
+                examType: import(".prisma/client").$Enums.ExamType;
+                marks: import("@prisma/client/runtime/library").Decimal;
+                totalMarks: import("@prisma/client/runtime/library").Decimal;
+                examDate: Date;
+                remarks: string | null;
+                percentage: import("@prisma/client/runtime/library").Decimal | null;
+            })[];
+        };
+    }>;
+    findOne(id: number): Promise<{
+        status: string;
+        data: {
+            grade: {
+                student: {
+                    bloodGroup: string | null;
+                    allergies: import("@prisma/client/runtime/library").JsonValue | null;
+                    medicalConditions: import("@prisma/client/runtime/library").JsonValue | null;
+                    matricule: string;
+                    dateOfBirth: Date;
+                    gender: import(".prisma/client").$Enums.Gender;
+                    level: string;
+                    className: string;
+                    section: string | null;
+                    parentId: number | null;
+                    documents: import("@prisma/client/runtime/library").JsonValue | null;
+                    id: number;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    addressStreet: string | null;
+                    addressCity: string | null;
+                    addressState: string | null;
+                    addressZipCode: string | null;
+                    addressCountry: string | null;
+                    admissionDate: Date;
+                    status: import(".prisma/client").$Enums.StudentStatus;
+                    emergencyContactName: string | null;
+                    emergencyContactRelationship: string | null;
+                    emergencyContactPhone: string | null;
+                    previousSchoolName: string | null;
+                    previousSchoolYear: string | null;
+                    userId: number;
+                };
+                teacher: {
+                    dateOfBirth: Date;
+                    gender: import(".prisma/client").$Enums.Gender;
+                    employeeId: string;
+                    qualification: string;
+                    specialization: string;
+                    salary: import("@prisma/client/runtime/library").Decimal;
+                    subjects: import("@prisma/client/runtime/library").JsonValue | null;
+                    experience: number;
+                    classes: import("@prisma/client/runtime/library").JsonValue | null;
+                    schedule: import("@prisma/client/runtime/library").JsonValue | null;
+                    documents: import("@prisma/client/runtime/library").JsonValue | null;
+                    id: number;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    addressStreet: string | null;
+                    addressCity: string | null;
+                    addressState: string | null;
+                    addressZipCode: string | null;
+                    addressCountry: string | null;
+                    status: import(".prisma/client").$Enums.TeacherStatus;
+                    userId: number;
+                    joiningDate: Date;
+                };
+                course: {
+                    name: string;
+                    description: string | null;
+                    level: string;
+                    schedule: import("@prisma/client/runtime/library").JsonValue | null;
+                    id: number;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    status: string;
+                    code: string;
+                    subject: string;
+                    teacherId: number | null;
+                    credits: number;
+                    maxStudents: number;
+                    enrolledStudents: import("@prisma/client/runtime/library").JsonValue | null;
+                    syllabus: import("@prisma/client/runtime/library").JsonValue | null;
+                    academicYear: string;
+                    semester: import(".prisma/client").$Enums.Semester;
+                };
+            } & {
+                grade: import(".prisma/client").$Enums.GradeLetter | null;
+                id: number;
+                createdAt: Date;
+                updatedAt: Date;
+                subject: string;
+                teacherId: number;
+                academicYear: string;
+                semester: import(".prisma/client").$Enums.Semester;
+                studentId: number;
+                courseId: number;
+                examType: import(".prisma/client").$Enums.ExamType;
+                marks: import("@prisma/client/runtime/library").Decimal;
+                totalMarks: import("@prisma/client/runtime/library").Decimal;
+                examDate: Date;
+                remarks: string | null;
+                percentage: import("@prisma/client/runtime/library").Decimal | null;
+            };
+        };
+    }>;
+    create(createGradeDto: CreateGradeDto): Promise<{
+        status: string;
+        data: {
+            grade: {
+                student: {
+                    bloodGroup: string | null;
+                    allergies: import("@prisma/client/runtime/library").JsonValue | null;
+                    medicalConditions: import("@prisma/client/runtime/library").JsonValue | null;
+                    matricule: string;
+                    dateOfBirth: Date;
+                    gender: import(".prisma/client").$Enums.Gender;
+                    level: string;
+                    className: string;
+                    section: string | null;
+                    parentId: number | null;
+                    documents: import("@prisma/client/runtime/library").JsonValue | null;
+                    id: number;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    addressStreet: string | null;
+                    addressCity: string | null;
+                    addressState: string | null;
+                    addressZipCode: string | null;
+                    addressCountry: string | null;
+                    admissionDate: Date;
+                    status: import(".prisma/client").$Enums.StudentStatus;
+                    emergencyContactName: string | null;
+                    emergencyContactRelationship: string | null;
+                    emergencyContactPhone: string | null;
+                    previousSchoolName: string | null;
+                    previousSchoolYear: string | null;
+                    userId: number;
+                };
+                teacher: {
+                    dateOfBirth: Date;
+                    gender: import(".prisma/client").$Enums.Gender;
+                    employeeId: string;
+                    qualification: string;
+                    specialization: string;
+                    salary: import("@prisma/client/runtime/library").Decimal;
+                    subjects: import("@prisma/client/runtime/library").JsonValue | null;
+                    experience: number;
+                    classes: import("@prisma/client/runtime/library").JsonValue | null;
+                    schedule: import("@prisma/client/runtime/library").JsonValue | null;
+                    documents: import("@prisma/client/runtime/library").JsonValue | null;
+                    id: number;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    addressStreet: string | null;
+                    addressCity: string | null;
+                    addressState: string | null;
+                    addressZipCode: string | null;
+                    addressCountry: string | null;
+                    status: import(".prisma/client").$Enums.TeacherStatus;
+                    userId: number;
+                    joiningDate: Date;
+                };
+                course: {
+                    name: string;
+                    description: string | null;
+                    level: string;
+                    schedule: import("@prisma/client/runtime/library").JsonValue | null;
+                    id: number;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    status: string;
+                    code: string;
+                    subject: string;
+                    teacherId: number | null;
+                    credits: number;
+                    maxStudents: number;
+                    enrolledStudents: import("@prisma/client/runtime/library").JsonValue | null;
+                    syllabus: import("@prisma/client/runtime/library").JsonValue | null;
+                    academicYear: string;
+                    semester: import(".prisma/client").$Enums.Semester;
+                };
+            } & {
+                grade: import(".prisma/client").$Enums.GradeLetter | null;
+                id: number;
+                createdAt: Date;
+                updatedAt: Date;
+                subject: string;
+                teacherId: number;
+                academicYear: string;
+                semester: import(".prisma/client").$Enums.Semester;
+                studentId: number;
+                courseId: number;
+                examType: import(".prisma/client").$Enums.ExamType;
+                marks: import("@prisma/client/runtime/library").Decimal;
+                totalMarks: import("@prisma/client/runtime/library").Decimal;
+                examDate: Date;
+                remarks: string | null;
+                percentage: import("@prisma/client/runtime/library").Decimal | null;
+            };
+        };
+    }>;
+    update(id: number, updateGradeDto: UpdateGradeDto): Promise<{
+        status: string;
+        data: {
+            grade: {
+                grade: import(".prisma/client").$Enums.GradeLetter | null;
+                id: number;
+                createdAt: Date;
+                updatedAt: Date;
+                subject: string;
+                teacherId: number;
+                academicYear: string;
+                semester: import(".prisma/client").$Enums.Semester;
+                studentId: number;
+                courseId: number;
+                examType: import(".prisma/client").$Enums.ExamType;
+                marks: import("@prisma/client/runtime/library").Decimal;
+                totalMarks: import("@prisma/client/runtime/library").Decimal;
+                examDate: Date;
+                remarks: string | null;
+                percentage: import("@prisma/client/runtime/library").Decimal | null;
+            };
+        };
+    }>;
+    remove(id: number): Promise<{
+        status: string;
+        message: string;
+    }>;
+}

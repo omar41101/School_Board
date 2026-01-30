@@ -24,85 +24,79 @@ import {
 
 interface SidebarItem {
   label: string;
-  icon: React.ComponentType<any>;
-  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  view: string;
   badge?: string;
   children?: SidebarItem[];
 }
 
 interface DashboardSidebarProps {
-  userRole: 'admin' | 'teacher' | 'student' | 'parent' | 'direction';
-  currentPath?: string;
-  onNavigate?: (path: string) => void;
+  role: 'admin' | 'teacher' | 'student' | 'parent' | 'direction';
+  currentView?: string;
+  onNavigate?: (view: string) => void;
 }
 
-export function DashboardSidebar({ userRole, currentPath = '/dashboard', onNavigate }: DashboardSidebarProps) {
+export function DashboardSidebar({ role, currentView = 'overview', onNavigate }: DashboardSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
 
-  const getMenuItems = (role: string): SidebarItem[] => {
-    const commonItems = [
-      { label: "Dashboard", icon: Home, href: "/dashboard" },
-      { label: "Messages", icon: MessageSquare, href: "/messages", badge: "3" }
+  const getMenuItems = (r: DashboardSidebarProps["role"]): SidebarItem[] => {
+    const common: SidebarItem[] = [
+      { label: "Dashboard", icon: Home, view: "overview" },
     ];
 
-    const roleSpecificItems = {
+    const byRole: Record<DashboardSidebarProps["role"], SidebarItem[]> = {
       admin: [
-        ...commonItems,
-        { label: "User Management", icon: Users, href: "/users" },
-        { label: "Teachers", icon: UserCheck, href: "/teachers" },
-        { label: "Students", icon: GraduationCap, href: "/students" },
-        { label: "Parents", icon: User, href: "/parents" },
-        { label: "Analytics", icon: BarChart3, href: "/analytics" },
-        { label: "Payments", icon: CreditCard, href: "/payments" },
-        { label: "Planning", icon: Calendar, href: "/planning" },
-        { label: "Courses & Classes", icon: Calendar, href: "/courses" },
-        { label: "Documents", icon: FileText, href: "/documents" },
-        { label: "Cantine", icon: Utensils, href: "/cantine" },
-        { label: "Events", icon: PartyPopper, href: "/events" },
-        { label: "Psychology Reports", icon: Brain, href: "/psychology" },
-        { label: "Settings", icon: Settings, href: "/settings" }
-      ],
-      teacher: [
-        ...commonItems,
-        { label: "My Classes", icon: GraduationCap, href: "/my-classes" },
-        { label: "Students", icon: Users, href: "/students" },
-        { label: "Grades & Homework", icon: FileText, href: "/grades" },
-        { label: "Schedule", icon: Calendar, href: "/schedule" },
-        { label: "Parent Communication", icon: MessageSquare, href: "/parent-chat" },
-        { label: "Psychology Reports", icon: Brain, href: "/psychology" }
-      ],
-      student: [
-        ...commonItems,
-        { label: "My Grades", icon: BarChart3, href: "/grades" },
-        { label: "Homework", icon: FileText, href: "/homework" },
-        { label: "Schedule", icon: Calendar, href: "/schedule" },
-        { label: "Payments", icon: CreditCard, href: "/payments" },
-        { label: "Events", icon: PartyPopper, href: "/events" },
-        { label: "Cantine Orders", icon: Utensils, href: "/cantine" }
-      ],
-      parent: [
-        ...commonItems,
-        { label: "Child Progress", icon: BarChart3, href: "/child-progress" },
-        { label: "Payments", icon: CreditCard, href: "/payments" },
-        { label: "Teacher Communication", icon: MessageSquare, href: "/teacher-chat" },
-        { label: "Events", icon: PartyPopper, href: "/events" },
-        { label: "Psychology Reports", icon: Brain, href: "/psychology" }
+        ...common,
+        { label: "Analytics", icon: BarChart3, view: "analytics" },
+        { label: "Users", icon: Users, view: "users" },
+        { label: "Students", icon: GraduationCap, view: "students" },
+        { label: "Teachers", icon: UserCheck, view: "teachers" },
+        { label: "Parents", icon: User, view: "parents" },
+        { label: "Courses", icon: Calendar, view: "courses" },
+        { label: "Settings", icon: Settings, view: "settings" },
       ],
       direction: [
-        ...commonItems,
-        { label: "School Analytics", icon: BarChart3, href: "/school-analytics" },
-        { label: "Bulletins", icon: FileText, href: "/bulletins" },
-        { label: "Exam Approvals", icon: Search, href: "/exam-approvals", badge: "5" },
-        { label: "School Reports", icon: FileText, href: "/reports" },
-        { label: "Surveys", icon: MessageSquare, href: "/surveys" }
-      ]
+        ...common,
+        { label: "Analytics", icon: BarChart3, view: "analytics" },
+        { label: "Users", icon: Users, view: "users" },
+        { label: "Students", icon: GraduationCap, view: "students" },
+        { label: "Teachers", icon: UserCheck, view: "teachers" },
+        { label: "Parents", icon: User, view: "parents" },
+        { label: "Courses", icon: Calendar, view: "courses" },
+        { label: "Settings", icon: Settings, view: "settings" },
+      ],
+      teacher: [
+        ...common,
+        { label: "My Classes", icon: GraduationCap, view: "classes" },
+        { label: "Grades", icon: FileText, view: "grades" },
+        { label: "Schedule", icon: Calendar, view: "schedule" },
+        { label: "Messages", icon: MessageSquare, view: "messages" },
+        { label: "Events", icon: PartyPopper, view: "events" },
+      ],
+      student: [
+        ...common,
+        { label: "My Grades", icon: BarChart3, view: "grades" },
+        { label: "Homework", icon: FileText, view: "homework" },
+        { label: "Schedule", icon: Calendar, view: "schedule" },
+        { label: "Messages", icon: MessageSquare, view: "messages" },
+        { label: "Events", icon: PartyPopper, view: "events" },
+        { label: "Payments", icon: CreditCard, view: "payments" },
+        { label: "Cantine", icon: Utensils, view: "cantine" },
+      ],
+      parent: [
+        ...common,
+        { label: "Child Progress", icon: BarChart3, view: "progress" },
+        { label: "Communication", icon: MessageSquare, view: "communication" },
+        { label: "Payments", icon: CreditCard, view: "payments" },
+        { label: "Events", icon: PartyPopper, view: "events" },
+      ],
     };
 
-    return roleSpecificItems[role as keyof typeof roleSpecificItems] || commonItems;
+    return byRole[r] ?? common;
   };
 
-  const menuItems = getMenuItems(userRole);
+  const menuItems = getMenuItems(role);
 
   return (
     <div className={`bg-gradient-to-b from-[#0D1B2A] via-[#1B2B3A] to-[#0D1B2A] border-r border-[#3E92CC]/20 transition-all duration-300 ${
@@ -114,7 +108,7 @@ export function DashboardSidebar({ userRole, currentPath = '/dashboard', onNavig
           {!isCollapsed && (
             <div>
               <h2 className="text-lg font-bold text-white">SchoolERP</h2>
-              <p className="text-xs text-[#3E92CC] capitalize">{userRole} Portal</p>
+              <p className="text-xs text-[#3E92CC] capitalize">{role} Portal</p>
             </div>
           )}
           <Button
@@ -133,7 +127,7 @@ export function DashboardSidebar({ userRole, currentPath = '/dashboard', onNavig
         <nav className="space-y-2">
           {menuItems.map((item, index) => {
             const Icon = item.icon;
-            const isActive = currentPath === item.href;
+            const isActive = currentView === item.view;
             
             return (
               <Button
@@ -144,7 +138,7 @@ export function DashboardSidebar({ userRole, currentPath = '/dashboard', onNavig
                     ? "bg-[#3E92CC] text-white hover:bg-[#3E92CC]/80 shadow-lg" 
                     : "text-white/80 hover:bg-white/10 hover:text-white"
                 } ${isCollapsed ? 'px-2' : 'px-3'} rounded-lg transition-all duration-200`}
-                onClick={() => onNavigate?.(item.href)}
+                onClick={() => onNavigate?.(item.view)}
               >
                 <Icon className={`h-4 w-4 ${isCollapsed ? '' : 'mr-3'} flex-shrink-0`} />
                 {!isCollapsed && (

@@ -12,14 +12,25 @@ import {
 import { Search, Bell, Settings, LogOut, User, Moon, Sun } from "lucide-react";
 import { useState } from "react";
 
+import { useAppDispatch } from '../../store/hooks';
+import { logoutUser } from '../../store/slices/authSlice.v2';
+import type { User } from '../../types';
+
 interface DashboardHeaderProps {
-  userRole: 'admin' | 'teacher' | 'student' | 'parent' | 'direction';
-  userName: string;
-  userAvatar?: string;
+  user: User | { _id: string; firstName: string; lastName: string; email: string; role: string; avatar?: string };
   onLogout?: () => void;
 }
 
-export function DashboardHeader({ userRole, userName, userAvatar, onLogout }: DashboardHeaderProps) {
+export function DashboardHeader({ user, onLogout }: DashboardHeaderProps) {
+  const dispatch = useAppDispatch();
+  
+  const userRole = (user as User).role || (user as { role: string }).role;
+  const userName = (user as User).firstName && (user as User).lastName
+    ? `${(user as User).firstName} ${(user as User).lastName}`
+    : (user as { firstName: string; lastName: string }).firstName && (user as { firstName: string; lastName: string }).lastName
+      ? `${(user as { firstName: string; lastName: string }).firstName} ${(user as { firstName: string; lastName: string }).lastName}`
+      : 'User';
+  const userAvatar = (user as User).avatar || (user as { avatar?: string }).avatar;
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [notifications] = useState(3);
 
@@ -37,6 +48,12 @@ export function DashboardHeader({ userRole, userName, userAvatar, onLogout }: Da
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
     document.documentElement.classList.toggle('dark');
+  };
+
+  const handleLogout = () => {
+    dispatch(logoutUser());
+    if (onLogout) onLogout();
+    window.location.href = '/login';
   };
 
   return (
@@ -111,7 +128,7 @@ export function DashboardHeader({ userRole, userName, userAvatar, onLogout }: Da
               <DropdownMenuSeparator />
               <DropdownMenuItem 
                 className="text-red-600"
-                onClick={onLogout}
+                onClick={handleLogout}
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 Sign Out

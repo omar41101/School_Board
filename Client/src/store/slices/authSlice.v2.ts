@@ -7,7 +7,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { authService, User, LoginCredentials, RegisterData, AuthResponse } from '../../services/authService';
 
 interface AuthState {
-  user: User | null;
+  user: User | AuthServiceUser | null;
   token: string | null;
   isAuthenticated: boolean;
   loading: boolean;
@@ -77,7 +77,7 @@ export const registerUser = createAsyncThunk<AuthResponse, RegisterData>(
 /**
  * Get current authenticated user
  */
-export const getCurrentUser = createAsyncThunk<User, void>(
+export const getCurrentUser = createAsyncThunk<User | AuthServiceUser, void>(
   'auth/getCurrentUser',
   async (_, { rejectWithValue }) => {
     try {
@@ -118,8 +118,20 @@ const authSlice = createSlice({
     /**
      * Update user data
      */
-    updateUserData: (state, action: PayloadAction<User>) => {
+    updateUserData: (state, action: PayloadAction<User | AuthServiceUser>) => {
       state.user = action.payload;
+    },
+
+    /**
+     * Set credentials (for RTK Query integration)
+     */
+    setCredentials: (state, action: PayloadAction<{ user: User | AuthServiceUser; token: string }>) => {
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+      state.isAuthenticated = true;
+      state.loading = false;
+      state.error = null;
+      authService.setToken(action.payload.token);
     },
   },
   extraReducers: (builder) => {
@@ -204,5 +216,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logoutUser, clearAuthError, updateUserData } = authSlice.actions;
+export const { logoutUser, clearAuthError, updateUserData, setCredentials } = authSlice.actions;
 export default authSlice.reducer;
