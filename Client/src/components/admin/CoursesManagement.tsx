@@ -1,29 +1,33 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import {
   useCreateCourseMutation,
   useDeleteCourseMutation,
   useGetCoursesQuery,
-  useGetTeachersQuery,
   useUpdateCourseMutation,
 } from '../../services/api';
+import { useDebouncedSearch } from '../../hooks/useDebounce';
 import { DataTable, type Column } from '../shared/DataTable';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Modal } from '../shared/Modal';
+import { FormModal } from '../shared/FormModal';
+import { ConfirmDeleteDialog } from '../shared/ConfirmDeleteDialog';
+import { PaginatedSelect } from '../shared/PaginatedSelect';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import { Badge } from '../ui/badge';
-import type { Course, Teacher } from '../../types';
+import type { Course } from '../../types';
 
 export function CoursesManagement() {
-  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [search, searchDebounced, setSearch] = useDebouncedSearch('', 1000);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
 
-  const { data, isLoading } = useGetCoursesQuery({});
-  const { data: teachersData } = useGetTeachersQuery();
-  const teachers = teachersData?.data?.teachers ?? [];
+  const { data, isLoading } = useGetCoursesQuery({ page, limit: 10, search: searchDebounced });
 
   const [createCourse, { isLoading: isCreating }] = useCreateCourseMutation();
   const [updateCourse, { isLoading: isUpdating }] = useUpdateCourseMutation();
@@ -94,38 +98,44 @@ export function CoursesManagement() {
   };
 
   const handleSubmit = async () => {
-    if (selectedCourse) {
-      await updateCourse({
-        id: selectedCourse.id,
-        data: {
-          ...(form.name && { name: form.name }),
-          ...(form.code && { code: form.code }),
+    try {
+      if (selectedCourse) {
+        await updateCourse({
+          id: selectedCourse.id,
+          data: {
+            ...(form.name && { name: form.name }),
+            ...(form.code && { code: form.code }),
+            description: form.description || undefined,
+            ...(form.level && { level: form.level }),
+            ...(form.subject && { subject: form.subject }),
+            ...(form.teacherId !== 'none' && { teacherId: Number(form.teacherId) }),
+            ...(form.credits && { credits: Number(form.credits) }),
+            ...(form.maxStudents && { maxStudents: Number(form.maxStudents) }),
+            ...(form.academicYear && { academicYear: form.academicYear }),
+            ...(form.semester && { semester: form.semester }),
+            ...(form.status && { status: form.status }),
+          },
+        }).unwrap();
+        toast.success('Course updated successfully');
+      } else {
+        await createCourse({
+          name: form.name,
+          code: form.code,
           description: form.description || undefined,
-          ...(form.level && { level: form.level }),
-          ...(form.subject && { subject: form.subject }),
+          level: form.level,
+          subject: form.subject,
           ...(form.teacherId !== 'none' && { teacherId: Number(form.teacherId) }),
-          ...(form.credits && { credits: Number(form.credits) }),
-          ...(form.maxStudents && { maxStudents: Number(form.maxStudents) }),
-          ...(form.academicYear && { academicYear: form.academicYear }),
-          ...(form.semester && { semester: form.semester }),
-          ...(form.status && { status: form.status }),
-        },
-      }).unwrap();
-    } else {
-      await createCourse({
-        name: form.name,
-        code: form.code,
-        description: form.description || undefined,
-        level: form.level,
-        subject: form.subject,
-        ...(form.teacherId !== 'none' && { teacherId: Number(form.teacherId) }),
-        credits: Number(form.credits),
-        maxStudents: Number(form.maxStudents),
-        academicYear: form.academicYear,
-        semester: form.semester,
-      }).unwrap();
+          credits: Number(form.credits),
+          maxStudents: Number(form.maxStudents),
+          academicYear: form.academicYear,
+          semester: form.semester,
+        }).unwrap();
+        toast.success('Course created successfully');
+      }
+      setIsModalOpen(false);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Operation failed');
     }
-    setIsModalOpen(false);
   };
 
   const columns: Column<Course>[] = [
@@ -179,24 +189,18 @@ export function CoursesManagement() {
       id: 'actions',
       header: 'Actions',
       cell: (row) => (
-        <div className="flex space-x-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              openEdit(row);
-            }}
-          >
+        <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
+          <Button type="button" variant="ghost" size="sm" onClick={() => openEdit(row)}>
             <Edit className="h-4 w-4" />
           </Button>
           <Button
+            type="button"
             variant="ghost"
             size="sm"
             disabled={isDeleting}
-            onClick={async () => {
-              const ok = window.confirm('Delete this course?');
-              if (!ok) return;
-              await deleteCourse(row.id).unwrap();
+            onClick={() => {
+              setCourseToDelete(row);
+              setDeleteOpen(true);
             }}
           >
             <Trash2 className="h-4 w-4 text-destructive" />
@@ -215,7 +219,7 @@ export function CoursesManagement() {
             Manage all courses in the system
           </p>
         </div>
-        <Button onClick={openCreate}>
+        <Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); openCreate(); }}>
           <Plus className="mr-2 h-4 w-4" />
           Add Course
         </Button>
@@ -238,22 +242,28 @@ export function CoursesManagement() {
         columns={columns}
         isLoading={isLoading}
         emptyMessage="No courses found"
+        pagination={{
+          page,
+          pageSize: 10,
+          total: data?.total ?? 0,
+          onPageChange: setPage,
+        }}
         onRowClick={(row) => {
           openEdit(row);
         }}
       />
 
-      <Modal
+      <FormModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         title={selectedCourse ? 'Edit Course' : 'Add New Course'}
         size="lg"
         footer={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSubmit} disabled={isCreating || isUpdating}>
+            <Button type="button" onClick={handleSubmit} disabled={isCreating || isUpdating}>
               {isCreating || isUpdating ? 'Saving...' : 'Save'}
             </Button>
           </div>
@@ -282,19 +292,13 @@ export function CoursesManagement() {
           </div>
           <div className="space-y-2 md:col-span-2">
             <Label>Teacher (optional)</Label>
-            <Select value={form.teacherId} onValueChange={(v) => setForm((p) => ({ ...p, teacherId: v }))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select teacher..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No teacher</SelectItem>
-                {teachers.map((t: Teacher) => (
-                  <SelectItem key={t.id} value={String(t.id)}>
-                    {t.user?.firstName} {t.user?.lastName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <PaginatedSelect
+              resource="teachers"
+              value={form.teacherId === 'none' ? '' : form.teacherId}
+              onValueChange={(v) => setForm((p) => ({ ...p, teacherId: v || 'none' }))}
+              placeholder="Select teacher..."
+              optional
+            />
           </div>
           <div className="space-y-2">
             <Label>Credits</Label>
@@ -328,7 +332,26 @@ export function CoursesManagement() {
             </div>
           )}
         </div>
-      </Modal>
+      </FormModal>
+
+      <ConfirmDeleteDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete course"
+        itemName={courseToDelete ? courseToDelete.name : undefined}
+        onConfirm={async () => {
+          if (!courseToDelete) return;
+          try {
+            await deleteCourse(courseToDelete.id).unwrap();
+            toast.success('Course deleted successfully');
+            setCourseToDelete(null);
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'Delete failed');
+            throw err;
+          }
+        }}
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

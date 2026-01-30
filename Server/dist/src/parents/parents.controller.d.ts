@@ -4,9 +4,12 @@ import { UpdateParentDto } from './dto/update-parent.dto';
 export declare class ParentsController {
     private readonly parentsService;
     constructor(parentsService: ParentsService);
-    findAll(): Promise<{
+    findAll(query: any): Promise<{
         status: string;
         results: number;
+        total: number;
+        totalPages: number;
+        currentPage: number;
         data: {
             parents: ({
                 user: {
@@ -29,8 +32,9 @@ export declare class ParentsController {
                     section: string | null;
                     parentId: number | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -44,13 +48,13 @@ export declare class ParentsController {
                     emergencyContactPhone: string | null;
                     previousSchoolName: string | null;
                     previousSchoolYear: string | null;
-                    userId: number;
                 }[];
             } & {
                 relationship: import(".prisma/client").$Enums.Relationship;
                 occupation: string | null;
-                id: number;
                 createdAt: Date;
+                id: number;
+                userId: number;
                 updatedAt: Date;
                 addressStreet: string | null;
                 addressCity: string | null;
@@ -61,7 +65,6 @@ export declare class ParentsController {
                 emergencyContactName: string | null;
                 emergencyContactRelationship: string | null;
                 emergencyContactPhone: string | null;
-                userId: number;
             })[];
         };
     }>;
@@ -79,7 +82,14 @@ export declare class ParentsController {
                     avatar: string;
                     isActive: boolean;
                 };
-                children: {
+                children: ({
+                    user: {
+                        firstName: string;
+                        lastName: string;
+                        id: number;
+                        avatar: string;
+                    };
+                } & {
                     bloodGroup: string | null;
                     allergies: import("@prisma/client/runtime/library").JsonValue | null;
                     medicalConditions: import("@prisma/client/runtime/library").JsonValue | null;
@@ -91,8 +101,9 @@ export declare class ParentsController {
                     section: string | null;
                     parentId: number | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -106,13 +117,13 @@ export declare class ParentsController {
                     emergencyContactPhone: string | null;
                     previousSchoolName: string | null;
                     previousSchoolYear: string | null;
-                    userId: number;
-                }[];
+                })[];
             } & {
                 relationship: import(".prisma/client").$Enums.Relationship;
                 occupation: string | null;
-                id: number;
                 createdAt: Date;
+                id: number;
+                userId: number;
                 updatedAt: Date;
                 addressStreet: string | null;
                 addressCity: string | null;
@@ -123,7 +134,6 @@ export declare class ParentsController {
                 emergencyContactName: string | null;
                 emergencyContactRelationship: string | null;
                 emergencyContactPhone: string | null;
-                userId: number;
             };
         };
     }>;
@@ -138,11 +148,11 @@ export declare class ParentsController {
                     email: string;
                     password: string;
                     role: import(".prisma/client").$Enums.Role;
+                    createdAt: Date;
                     id: number;
                     avatar: string | null;
                     isActive: boolean;
                     lastLogin: Date | null;
-                    createdAt: Date;
                     updatedAt: Date;
                 };
                 children: {
@@ -157,8 +167,9 @@ export declare class ParentsController {
                     section: string | null;
                     parentId: number | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -172,13 +183,13 @@ export declare class ParentsController {
                     emergencyContactPhone: string | null;
                     previousSchoolName: string | null;
                     previousSchoolYear: string | null;
-                    userId: number;
                 }[];
             } & {
                 relationship: import(".prisma/client").$Enums.Relationship;
                 occupation: string | null;
-                id: number;
                 createdAt: Date;
+                id: number;
+                userId: number;
                 updatedAt: Date;
                 addressStreet: string | null;
                 addressCity: string | null;
@@ -189,7 +200,6 @@ export declare class ParentsController {
                 emergencyContactName: string | null;
                 emergencyContactRelationship: string | null;
                 emergencyContactPhone: string | null;
-                userId: number;
             };
         };
     }>;
@@ -208,8 +218,9 @@ export declare class ParentsController {
             } & {
                 relationship: import(".prisma/client").$Enums.Relationship;
                 occupation: string | null;
-                id: number;
                 createdAt: Date;
+                id: number;
+                userId: number;
                 updatedAt: Date;
                 addressStreet: string | null;
                 addressCity: string | null;
@@ -220,7 +231,6 @@ export declare class ParentsController {
                 emergencyContactName: string | null;
                 emergencyContactRelationship: string | null;
                 emergencyContactPhone: string | null;
-                userId: number;
             };
         };
     }>;
@@ -235,18 +245,19 @@ export declare class ParentsController {
                     email: string;
                     password: string;
                     role: import(".prisma/client").$Enums.Role;
+                    createdAt: Date;
                     id: number;
                     avatar: string | null;
                     isActive: boolean;
                     lastLogin: Date | null;
-                    createdAt: Date;
                     updatedAt: Date;
                 };
             } & {
                 relationship: import(".prisma/client").$Enums.Relationship;
                 occupation: string | null;
-                id: number;
                 createdAt: Date;
+                id: number;
+                userId: number;
                 updatedAt: Date;
                 addressStreet: string | null;
                 addressCity: string | null;
@@ -257,7 +268,6 @@ export declare class ParentsController {
                 emergencyContactName: string | null;
                 emergencyContactRelationship: string | null;
                 emergencyContactPhone: string | null;
-                userId: number;
             };
         };
     }>;

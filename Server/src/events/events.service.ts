@@ -8,11 +8,12 @@ export class EventsService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(query: any) {
-    const { type, status, startDate, endDate } = query;
+    const { type, status, startDate, endDate, organizerId } = query;
     const where: any = {};
     
     if (type) where.type = type;
     if (status) where.status = status;
+    if (organizerId) where.organizerId = parseInt(organizerId);
     if (startDate) where.startDate = { gte: new Date(startDate) };
     if (endDate) where.endDate = { lte: new Date(endDate) };
 

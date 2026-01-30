@@ -17,7 +17,7 @@ let CoursesService = class CoursesService {
         this.prisma = prisma;
     }
     async findAll(query) {
-        const { level, subject, status } = query;
+        const { level, subject, status, student, teacher, page = 1, limit = 10 } = query;
         const where = {};
         if (level)
             where.level = level;
@@ -25,7 +25,9 @@ let CoursesService = class CoursesService {
             where.subject = subject;
         if (status)
             where.status = status;
-        const courses = await this.prisma.course.findMany({
+        if (teacher)
+            where.teacherId = parseInt(teacher);
+        let courses = await this.prisma.course.findMany({
             where,
             include: {
                 teacher: {
@@ -41,11 +43,23 @@ let CoursesService = class CoursesService {
                     },
                 },
             },
+            orderBy: { createdAt: 'desc' },
         });
+        if (student) {
+            const studentId = parseInt(student);
+            courses = courses.filter((c) => c.enrolledStudents?.includes(studentId) ?? false);
+        }
+        const total = courses.length;
+        const skip = (Number(page) - 1) * Number(limit);
+        const take = Number(limit);
+        const paginatedCourses = courses.slice(skip, skip + take);
         return {
             status: 'success',
-            results: courses.length,
-            data: { courses },
+            results: paginatedCourses.length,
+            total,
+            totalPages: Math.ceil(total / take),
+            currentPage: Number(page),
+            data: { courses: paginatedCourses },
         };
     }
     async findOne(id) {

@@ -6,10 +6,15 @@ export declare class AuthService {
     private prisma;
     private jwtService;
     constructor(prisma: PrismaService, jwtService: JwtService);
+    private signAccessToken;
+    private createRefreshTokenForUser;
     validateUser(email: string, password: string): Promise<any>;
     login(user: any): Promise<{
         success: boolean;
         token: string;
+        accessToken: string;
+        refreshToken: string;
+        expiresIn: number;
         data: {
             id: any;
             firstName: any;
@@ -24,6 +29,9 @@ export declare class AuthService {
     register(registerDto: RegisterDto): Promise<{
         success: boolean;
         token: string;
+        accessToken: string;
+        refreshToken: string;
+        expiresIn: number;
         data: {
             profileCreated: boolean;
             phone: string | null;
@@ -31,12 +39,29 @@ export declare class AuthService {
             lastName: string;
             email: string;
             role: import(".prisma/client").$Enums.Role;
+            createdAt: Date;
             id: number;
             avatar: string | null;
             isActive: boolean;
             lastLogin: Date | null;
-            createdAt: Date;
             updatedAt: Date;
+        };
+    }>;
+    refresh(refreshToken: string): Promise<{
+        success: boolean;
+        token: string;
+        accessToken: string;
+        refreshToken: string;
+        expiresIn: number;
+        data: {
+            id: number;
+            firstName: string;
+            lastName: string;
+            email: string;
+            role: import(".prisma/client").$Enums.Role;
+            avatar: string;
+            isActive: true;
+            createdAt: Date;
         };
     }>;
     getMe(userId: number): Promise<{
@@ -46,15 +71,16 @@ export declare class AuthService {
             lastName: string;
             email: string;
             role: import(".prisma/client").$Enums.Role;
+            createdAt: Date;
             id: number;
             avatar: string;
             isActive: boolean;
-            createdAt: Date;
         };
     }>;
     updatePassword(userId: number, updatePasswordDto: UpdatePasswordDto): Promise<{
         status: string;
         token: string;
+        accessToken: string;
         message: string;
     }>;
 }

@@ -6,6 +6,7 @@ export declare class UsersController {
     findAll(query: any): Promise<{
         status: string;
         results: number;
+        total: number;
         totalPages: number;
         currentPage: number;
         data: {
@@ -15,11 +16,11 @@ export declare class UsersController {
                 lastName: string;
                 email: string;
                 role: import(".prisma/client").$Enums.Role;
+                createdAt: Date;
                 id: number;
                 avatar: string;
                 isActive: boolean;
                 lastLogin: Date;
-                createdAt: Date;
                 updatedAt: Date;
             }[];
         };
@@ -33,11 +34,11 @@ export declare class UsersController {
                 lastName: string;
                 email: string;
                 role: import(".prisma/client").$Enums.Role;
+                createdAt: Date;
                 id: number;
                 avatar: string;
                 isActive: boolean;
                 lastLogin: Date;
-                createdAt: Date;
                 updatedAt: Date;
             };
         };
@@ -51,11 +52,11 @@ export declare class UsersController {
                 lastName: string;
                 email: string;
                 role: import(".prisma/client").$Enums.Role;
+                createdAt: Date;
                 id: number;
                 avatar: string;
                 isActive: boolean;
                 lastLogin: Date;
-                createdAt: Date;
                 updatedAt: Date;
             };
         };
@@ -69,11 +70,11 @@ export declare class UsersController {
                 lastName: string;
                 email: string;
                 role: import(".prisma/client").$Enums.Role;
+                createdAt: Date;
                 id: number;
                 avatar: string;
                 isActive: boolean;
                 lastLogin: Date;
-                createdAt: Date;
                 updatedAt: Date;
             };
         };
@@ -87,11 +88,11 @@ export declare class UsersController {
                 lastName: string;
                 email: string;
                 role: import(".prisma/client").$Enums.Role;
+                createdAt: Date;
                 id: number;
                 avatar: string;
                 isActive: boolean;
                 lastLogin: Date;
-                createdAt: Date;
                 updatedAt: Date;
             };
         };
@@ -109,11 +110,11 @@ export declare class UsersController {
                 lastName: string;
                 email: string;
                 role: import(".prisma/client").$Enums.Role;
+                createdAt: Date;
                 id: number;
                 avatar: string;
                 isActive: boolean;
                 lastLogin: Date;
-                createdAt: Date;
                 updatedAt: Date;
             };
         };

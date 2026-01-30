@@ -43,7 +43,8 @@ export function DataTable<T extends { id: number | string }>({
   onRowClick,
   pagination,
 }: DataTableProps<T>) {
-  const totalPages = pagination ? Math.ceil(pagination.total / pagination.pageSize) : 1;
+  const totalPages = pagination ? Math.max(1, Math.ceil(pagination.total / pagination.pageSize)) : 1;
+  const showPagination = pagination && pagination.total > 0;
 
   if (isLoading) {
     return (
@@ -55,7 +56,8 @@ export function DataTable<T extends { id: number | string }>({
 
   return (
     <div className={cn('space-y-4', className)}>
-      <div className="rounded-md border">
+      {/* Desktop: table */}
+      <div className="hidden md:block rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -95,8 +97,51 @@ export function DataTable<T extends { id: number | string }>({
           </TableBody>
         </Table>
       </div>
-      {pagination && totalPages > 1 && (
-        <div className="flex items-center justify-between px-2">
+      {/* Mobile: cards */}
+      <div className="md:hidden space-y-3">
+        {data.length === 0 ? (
+          <div className="rounded-lg border p-6 text-center text-muted-foreground">
+            {emptyMessage}
+          </div>
+        ) : (
+          data.map((row) => (
+            <div
+              key={row.id}
+              onClick={() => onRowClick?.(row)}
+              className={cn(
+                'rounded-lg border bg-card p-4 shadow-sm',
+                onRowClick && 'cursor-pointer active:bg-muted/50'
+              )}
+            >
+              <div className="space-y-2">
+                {columns
+                  .filter((col) => col.id !== 'actions')
+                  .map((column) => (
+                    <div key={column.id} className="flex flex-wrap items-baseline gap-2">
+                      <span className="text-xs font-medium text-muted-foreground shrink-0">
+                        {column.header}:
+                      </span>
+                      <span className="text-sm">
+                        {column.cell
+                          ? column.cell(row)
+                          : column.accessorKey
+                            ? String(row[column.accessorKey] ?? '')
+                            : ''}
+                      </span>
+                    </div>
+                  ))}
+                {columns.some((c) => c.id === 'actions') && (
+                  <div className="pt-2 border-t mt-2">
+                    {columns.find((c) => c.id === 'actions')?.cell?.(row)}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+      {showPagination && (
+        <div className="flex items-center justify-between px-2 py-2 border-t">
           <div className="text-sm text-muted-foreground">
             Showing {(pagination.page - 1) * pagination.pageSize + 1} to{' '}
             {Math.min(pagination.page * pagination.pageSize, pagination.total)} of{' '}

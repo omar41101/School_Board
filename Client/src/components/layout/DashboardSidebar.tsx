@@ -54,6 +54,7 @@ export function DashboardSidebar({ role, currentView = 'overview', onNavigate }:
         { label: "Teachers", icon: UserCheck, view: "teachers" },
         { label: "Parents", icon: User, view: "parents" },
         { label: "Courses", icon: Calendar, view: "courses" },
+        { label: "Planning", icon: Calendar, view: "planning" },
         { label: "Settings", icon: Settings, view: "settings" },
       ],
       direction: [
@@ -64,6 +65,7 @@ export function DashboardSidebar({ role, currentView = 'overview', onNavigate }:
         { label: "Teachers", icon: UserCheck, view: "teachers" },
         { label: "Parents", icon: User, view: "parents" },
         { label: "Courses", icon: Calendar, view: "courses" },
+        { label: "Planning", icon: Calendar, view: "planning" },
         { label: "Settings", icon: Settings, view: "settings" },
       ],
       teacher: [

@@ -27,8 +27,9 @@ export declare class GradesService {
                     section: string | null;
                     parentId: number | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -42,7 +43,6 @@ export declare class GradesService {
                     emergencyContactPhone: string | null;
                     previousSchoolName: string | null;
                     previousSchoolYear: string | null;
-                    userId: number;
                 };
                 teacher: {
                     user: {
@@ -62,8 +62,9 @@ export declare class GradesService {
                     classes: import("@prisma/client/runtime/library").JsonValue | null;
                     schedule: import("@prisma/client/runtime/library").JsonValue | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -71,7 +72,6 @@ export declare class GradesService {
                     addressZipCode: string | null;
                     addressCountry: string | null;
                     status: import(".prisma/client").$Enums.TeacherStatus;
-                    userId: number;
                     joiningDate: Date;
                 };
                 course: {
@@ -81,8 +81,8 @@ export declare class GradesService {
                 };
             } & {
                 grade: import(".prisma/client").$Enums.GradeLetter | null;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 subject: string;
                 teacherId: number;
@@ -115,8 +115,9 @@ export declare class GradesService {
                     section: string | null;
                     parentId: number | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -130,7 +131,6 @@ export declare class GradesService {
                     emergencyContactPhone: string | null;
                     previousSchoolName: string | null;
                     previousSchoolYear: string | null;
-                    userId: number;
                 };
                 teacher: {
                     dateOfBirth: Date;
@@ -144,8 +144,9 @@ export declare class GradesService {
                     classes: import("@prisma/client/runtime/library").JsonValue | null;
                     schedule: import("@prisma/client/runtime/library").JsonValue | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -153,7 +154,6 @@ export declare class GradesService {
                     addressZipCode: string | null;
                     addressCountry: string | null;
                     status: import(".prisma/client").$Enums.TeacherStatus;
-                    userId: number;
                     joiningDate: Date;
                 };
                 course: {
@@ -161,8 +161,8 @@ export declare class GradesService {
                     description: string | null;
                     level: string;
                     schedule: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
                     updatedAt: Date;
                     status: string;
                     code: string;
@@ -177,8 +177,8 @@ export declare class GradesService {
                 };
             } & {
                 grade: import(".prisma/client").$Enums.GradeLetter | null;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 subject: string;
                 teacherId: number;
@@ -211,8 +211,9 @@ export declare class GradesService {
                     section: string | null;
                     parentId: number | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -226,7 +227,6 @@ export declare class GradesService {
                     emergencyContactPhone: string | null;
                     previousSchoolName: string | null;
                     previousSchoolYear: string | null;
-                    userId: number;
                 };
                 teacher: {
                     dateOfBirth: Date;
@@ -240,8 +240,9 @@ export declare class GradesService {
                     classes: import("@prisma/client/runtime/library").JsonValue | null;
                     schedule: import("@prisma/client/runtime/library").JsonValue | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -249,7 +250,6 @@ export declare class GradesService {
                     addressZipCode: string | null;
                     addressCountry: string | null;
                     status: import(".prisma/client").$Enums.TeacherStatus;
-                    userId: number;
                     joiningDate: Date;
                 };
                 course: {
@@ -257,8 +257,8 @@ export declare class GradesService {
                     description: string | null;
                     level: string;
                     schedule: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
                     updatedAt: Date;
                     status: string;
                     code: string;
@@ -273,8 +273,8 @@ export declare class GradesService {
                 };
             } & {
                 grade: import(".prisma/client").$Enums.GradeLetter | null;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 subject: string;
                 teacherId: number;
@@ -296,8 +296,8 @@ export declare class GradesService {
         data: {
             grade: {
                 grade: import(".prisma/client").$Enums.GradeLetter | null;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 subject: string;
                 teacherId: number;

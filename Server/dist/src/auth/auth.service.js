@@ -13,11 +13,26 @@ exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const prisma_service_1 = require("../prisma/prisma.service");
+const ACCESS_TOKEN_EXPIRE = '15m';
+const REFRESH_TOKEN_DAYS = 7;
 let AuthService = class AuthService {
     constructor(prisma, jwtService) {
         this.prisma = prisma;
         this.jwtService = jwtService;
+    }
+    signAccessToken(payload) {
+        return this.jwtService.sign(payload, { expiresIn: ACCESS_TOKEN_EXPIRE });
+    }
+    async createRefreshTokenForUser(userId) {
+        const token = crypto.randomBytes(40).toString('hex');
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + REFRESH_TOKEN_DAYS);
+        await this.prisma.refreshToken.create({
+            data: { userId, token, expiresAt },
+        });
+        return { token, expiresAt };
     }
     async validateUser(email, password) {
         const user = await this.prisma.user.findUnique({
@@ -39,9 +54,14 @@ let AuthService = class AuthService {
             data: { lastLogin: new Date() },
         });
         const payload = { email: user.email, id: user.id };
+        const accessToken = this.signAccessToken(payload);
+        const { token: refreshToken, expiresAt } = await this.createRefreshTokenForUser(user.id);
         return {
             success: true,
-            token: this.jwtService.sign(payload),
+            token: accessToken,
+            accessToken,
+            refreshToken,
+            expiresIn: 900,
             data: {
                 id: user.id,
                 firstName: user.firstName,
@@ -150,13 +170,55 @@ let AuthService = class AuthService {
             console.log('Profile creation skipped or failed:', error.message);
         }
         const payload = { email: user.email, id: user.id };
+        const accessToken = this.signAccessToken(payload);
+        const { token: refreshToken } = await this.createRefreshTokenForUser(user.id);
         const { password: _, ...userWithoutPassword } = user;
         return {
             success: true,
-            token: this.jwtService.sign(payload),
+            token: accessToken,
+            accessToken,
+            refreshToken,
+            expiresIn: 900,
             data: {
                 ...userWithoutPassword,
                 profileCreated,
+            },
+        };
+    }
+    async refresh(refreshToken) {
+        const record = await this.prisma.refreshToken.findUnique({
+            where: { token: refreshToken },
+            include: { user: true },
+        });
+        if (!record || record.expiresAt < new Date()) {
+            if (record)
+                await this.prisma.refreshToken.delete({ where: { id: record.id } }).catch(() => { });
+            throw new common_1.UnauthorizedException('Invalid or expired refresh token');
+        }
+        const user = record.user;
+        if (!user.isActive) {
+            await this.prisma.refreshToken.delete({ where: { id: record.id } });
+            throw new common_1.UnauthorizedException('Account is deactivated');
+        }
+        await this.prisma.refreshToken.delete({ where: { id: record.id } });
+        const payload = { email: user.email, id: user.id };
+        const accessToken = this.signAccessToken(payload);
+        const { token: newRefreshToken } = await this.createRefreshTokenForUser(user.id);
+        return {
+            success: true,
+            token: accessToken,
+            accessToken,
+            refreshToken: newRefreshToken,
+            expiresIn: 900,
+            data: {
+                id: user.id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                role: user.role,
+                avatar: user.avatar,
+                isActive: user.isActive,
+                createdAt: user.createdAt,
             },
         };
     }
@@ -197,9 +259,11 @@ let AuthService = class AuthService {
             data: { password: hashedPassword },
         });
         const payload = { email: user.email, id: user.id };
+        const accessToken = this.signAccessToken(payload);
         return {
             status: 'success',
-            token: this.jwtService.sign(payload),
+            token: accessToken,
+            accessToken,
             message: 'Password updated successfully',
         };
     }

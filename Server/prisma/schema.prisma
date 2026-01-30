@@ -179,6 +179,7 @@ model User {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
+  refreshTokens    RefreshToken[]
   studentProfile    Student?
   teacherProfile    Teacher?
   parentProfile     Parent?
@@ -187,6 +188,18 @@ model User {
   receivedMessages  Message[]     @relation("MessageRecipient")
 
   @@map("users")
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
 }
 
 model Student {

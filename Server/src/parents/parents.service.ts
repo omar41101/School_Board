@@ -7,26 +7,50 @@ import { UpdateParentDto } from './dto/update-parent.dto';
 export class ParentsService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll() {
-    const parents = await this.prisma.parent.findMany({
-      include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            avatar: true,
-            phone: true,
+  async findAll(query: any = {}) {
+    const { page = 1, limit = 10, search } = query;
+    const where: any = {};
+    if (search) {
+      where.user = {
+        OR: [
+          { firstName: { contains: search, mode: 'insensitive' } },
+          { lastName: { contains: search, mode: 'insensitive' } },
+          { email: { contains: search, mode: 'insensitive' } },
+        ],
+      };
+    }
+    const skip = (Number(page) - 1) * Number(limit);
+    const take = Number(limit);
+
+    const [parents, total] = await Promise.all([
+      this.prisma.parent.findMany({
+        where,
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              avatar: true,
+              phone: true,
+            },
           },
+          children: true,
         },
-        children: true,
-      },
-    });
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.parent.count({ where }),
+    ]);
 
     return {
       status: 'success',
       results: parents.length,
+      total,
+      totalPages: Math.ceil(total / take),
+      currentPage: Number(page),
       data: { parents },
     };
   }
@@ -47,7 +71,18 @@ export class ParentsService {
             isActive: true,
           },
         },
-        children: true,
+        children: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                avatar: true,
+              },
+            },
+          },
+        },
       },
     });
 

@@ -17,10 +17,14 @@ let PaymentsService = class PaymentsService {
         this.prisma = prisma;
     }
     async findAll(query) {
-        const { student, status, type } = query;
+        const { student, parent, status, type } = query;
         const where = {};
-        if (student)
+        if (student) {
             where.studentId = parseInt(student);
+        }
+        else if (parent) {
+            where.student = { parentId: parseInt(parent) };
+        }
         if (status)
             where.status = status;
         if (type)

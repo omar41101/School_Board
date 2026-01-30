@@ -31,8 +31,8 @@ export declare class MessagesController {
                     id: number;
                 };
             } & {
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 subject: string;
                 attachments: import("@prisma/client/runtime/library").JsonValue | null;
@@ -57,11 +57,11 @@ export declare class MessagesController {
                     email: string;
                     password: string;
                     role: import(".prisma/client").$Enums.Role;
+                    createdAt: Date;
                     id: number;
                     avatar: string | null;
                     isActive: boolean;
                     lastLogin: Date | null;
-                    createdAt: Date;
                     updatedAt: Date;
                 };
                 recipient: {
@@ -71,16 +71,16 @@ export declare class MessagesController {
                     email: string;
                     password: string;
                     role: import(".prisma/client").$Enums.Role;
+                    createdAt: Date;
                     id: number;
                     avatar: string | null;
                     isActive: boolean;
                     lastLogin: Date | null;
-                    createdAt: Date;
                     updatedAt: Date;
                 };
             } & {
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 subject: string;
                 attachments: import("@prisma/client/runtime/library").JsonValue | null;
@@ -113,8 +113,8 @@ export declare class MessagesController {
                     id: number;
                 };
             } & {
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 subject: string;
                 attachments: import("@prisma/client/runtime/library").JsonValue | null;
@@ -139,11 +139,11 @@ export declare class MessagesController {
                     email: string;
                     password: string;
                     role: import(".prisma/client").$Enums.Role;
+                    createdAt: Date;
                     id: number;
                     avatar: string | null;
                     isActive: boolean;
                     lastLogin: Date | null;
-                    createdAt: Date;
                     updatedAt: Date;
                 };
                 recipient: {
@@ -153,16 +153,16 @@ export declare class MessagesController {
                     email: string;
                     password: string;
                     role: import(".prisma/client").$Enums.Role;
+                    createdAt: Date;
                     id: number;
                     avatar: string | null;
                     isActive: boolean;
                     lastLogin: Date | null;
-                    createdAt: Date;
                     updatedAt: Date;
                 };
             } & {
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 subject: string;
                 attachments: import("@prisma/client/runtime/library").JsonValue | null;

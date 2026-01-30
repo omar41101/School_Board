@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import {
   useDeactivateUserMutation,
   useDeleteUserMutation,
@@ -6,30 +7,34 @@ import {
   useRegisterMutation,
   useUpdateUserMutation,
 } from '../../services/api';
+import { useDebouncedSearch } from '../../hooks/useDebounce';
 import { DataTable, type Column } from '../shared/DataTable';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Badge } from '../ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Modal } from '../shared/Modal';
+import { FormModal } from '../shared/FormModal';
+import { ConfirmDeleteDialog } from '../shared/ConfirmDeleteDialog';
 import { Edit, Plus, Search, Trash2, UserCheck, UserX } from 'lucide-react';
 import type { User } from '../../types';
 
 export function UserManagement() {
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [search, searchDebounced, setSearch] = useDebouncedSearch('', 1000);
   const [roleFilter, setRoleFilter] = useState<User['role'] | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
   const { data, isLoading } = useGetUsersQuery({
     page,
     limit: 10,
-    ...(search && { search }),
+    ...(searchDebounced && { search: searchDebounced }),
     ...(roleFilter !== 'all' && { role: roleFilter }),
     ...(statusFilter !== 'all' && { status: statusFilter }),
   });
@@ -94,28 +99,34 @@ export function UserManagement() {
   };
 
   const handleSubmit = async () => {
-    if (modalMode === 'create') {
-      await register({
-        firstName: form.firstName,
-        lastName: form.lastName,
-        email: form.email,
-        password: form.password,
-        role: form.role,
-      }).unwrap();
-    } else if (selectedUser) {
-      await updateUser({
-        id: selectedUser.id,
-        data: {
-          ...(form.firstName && { firstName: form.firstName }),
-          ...(form.lastName && { lastName: form.lastName }),
-          ...(form.email && { email: form.email }),
-          ...(form.phone && { phone: form.phone }),
-          ...(form.avatar && { avatar: form.avatar }),
-          isActive: form.isActive,
-        },
-      }).unwrap();
+    try {
+      if (modalMode === 'create') {
+        await register({
+          firstName: form.firstName,
+          lastName: form.lastName,
+          email: form.email,
+          password: form.password,
+          role: form.role,
+        }).unwrap();
+        toast.success('User created successfully');
+      } else if (selectedUser) {
+        await updateUser({
+          id: selectedUser.id,
+          data: {
+            ...(form.firstName && { firstName: form.firstName }),
+            ...(form.lastName && { lastName: form.lastName }),
+            ...(form.email && { email: form.email }),
+            ...(form.phone && { phone: form.phone }),
+            ...(form.avatar && { avatar: form.avatar }),
+            isActive: form.isActive,
+          },
+        }).unwrap();
+        toast.success('User updated successfully');
+      }
+      setIsModalOpen(false);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Operation failed');
     }
-    setIsModalOpen(false);
   };
 
   const columns: Column<User>[] = [
@@ -157,18 +168,26 @@ export function UserManagement() {
       header: 'Actions',
       cell: (row) => (
         <div className="flex space-x-2">
-          <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>
+          <Button type="button" variant="ghost" size="sm" onClick={(ev) => { ev.stopPropagation(); openEdit(row); }}>
             <Edit className="h-4 w-4" />
           </Button>
           <Button
+            type="button"
             variant="ghost"
             size="sm"
             disabled={isDeactivating || isUpdating}
-            onClick={async () => {
-              if (row.isActive) {
-                await deactivateUser(row.id).unwrap();
-              } else {
-                await updateUser({ id: row.id, data: { isActive: true } }).unwrap();
+            onClick={async (ev) => {
+              ev.stopPropagation();
+              try {
+                if (row.isActive) {
+                  await deactivateUser(row.id).unwrap();
+                  toast.success('User deactivated');
+                } else {
+                  await updateUser({ id: row.id, data: { isActive: true } }).unwrap();
+                  toast.success('User activated');
+                }
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : 'Operation failed');
               }
             }}
             title={row.isActive ? 'Deactivate' : 'Activate'}
@@ -176,13 +195,14 @@ export function UserManagement() {
             {row.isActive ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
           </Button>
           <Button
+            type="button"
             variant="ghost"
             size="sm"
             disabled={isDeleting}
-            onClick={async () => {
-              const ok = window.confirm('Delete this user?');
-              if (!ok) return;
-              await deleteUser(row.id).unwrap();
+            onClick={(ev) => {
+              ev.stopPropagation();
+              setUserToDelete(row);
+              setDeleteOpen(true);
             }}
           >
             <Trash2 className="h-4 w-4 text-destructive" />
@@ -199,7 +219,7 @@ export function UserManagement() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">User Management</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">Manage user accounts</p>
         </div>
-        <Button onClick={openCreate}>
+        <Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); openCreate(); }}>
           <Plus className="mr-2 h-4 w-4" />
           Add User
         </Button>
@@ -215,7 +235,7 @@ export function UserManagement() {
             className="pl-10"
           />
         </div>
-
+        
         <div className="flex gap-2">
           <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v as User['role'] | 'all')}>
             <SelectTrigger className="w-44">
@@ -252,22 +272,23 @@ export function UserManagement() {
         pagination={{
           page,
           pageSize: 10,
-          total: data?.totalPages ? data.totalPages * 10 : 0,
+          total: data?.total ?? 0,
           onPageChange: setPage,
         }}
       />
 
-      <Modal
+      <FormModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         title={modalMode === 'create' ? 'Add User' : 'Edit User'}
         size="lg"
         footer={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>
             <Button
+              type="button"
               onClick={handleSubmit}
               disabled={
                 isCreating ||
@@ -277,22 +298,22 @@ export function UserManagement() {
             >
               {isCreating || isUpdating ? 'Saving...' : 'Save'}
             </Button>
-          </div>
+                    </div>
         }
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
+                    <div className="space-y-2">
             <Label>First name</Label>
             <Input value={form.firstName} onChange={(e) => setForm((p) => ({ ...p, firstName: e.target.value }))} />
-          </div>
-          <div className="space-y-2">
+                    </div>
+                    <div className="space-y-2">
             <Label>Last name</Label>
             <Input value={form.lastName} onChange={(e) => setForm((p) => ({ ...p, lastName: e.target.value }))} />
-          </div>
+                        </div>
           <div className="space-y-2 md:col-span-2">
             <Label>Email</Label>
             <Input type="email" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} />
-          </div>
+                    </div>
 
           {modalMode === 'create' ? (
             <>
@@ -303,7 +324,7 @@ export function UserManagement() {
                   value={form.password}
                   onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))} 
                 />
-              </div>
+                      </div>
               <div className="space-y-2 md:col-span-2">
                 <Label>Role</Label>
                 <Select value={form.role} onValueChange={(v) => setForm((p) => ({ ...p, role: v as User['role'] }))}>
@@ -318,7 +339,7 @@ export function UserManagement() {
                     <SelectItem value="parent">parent</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+                    </div>
             </>
           ) : (
             <>
@@ -345,7 +366,26 @@ export function UserManagement() {
             </>
           )}
         </div>
-      </Modal>
+      </FormModal>
+
+      <ConfirmDeleteDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete user"
+        itemName={userToDelete ? `${userToDelete.firstName} ${userToDelete.lastName}` : undefined}
+        onConfirm={async () => {
+          if (!userToDelete) return;
+          try {
+            await deleteUser(userToDelete.id).unwrap();
+            toast.success('User deleted');
+            setUserToDelete(null);
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'Delete failed');
+            throw err;
+          }
+        }}
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

@@ -20,8 +20,8 @@ export declare class EventsController {
                 type: import(".prisma/client").$Enums.EventType;
                 description: string | null;
                 title: string;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.EventStatus;
                 isPublic: boolean;
@@ -48,19 +48,19 @@ export declare class EventsController {
                     email: string;
                     password: string;
                     role: import(".prisma/client").$Enums.Role;
+                    createdAt: Date;
                     id: number;
                     avatar: string | null;
                     isActive: boolean;
                     lastLogin: Date | null;
-                    createdAt: Date;
                     updatedAt: Date;
                 };
             } & {
                 type: import(".prisma/client").$Enums.EventType;
                 description: string | null;
                 title: string;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.EventStatus;
                 isPublic: boolean;
@@ -87,19 +87,19 @@ export declare class EventsController {
                     email: string;
                     password: string;
                     role: import(".prisma/client").$Enums.Role;
+                    createdAt: Date;
                     id: number;
                     avatar: string | null;
                     isActive: boolean;
                     lastLogin: Date | null;
-                    createdAt: Date;
                     updatedAt: Date;
                 };
             } & {
                 type: import(".prisma/client").$Enums.EventType;
                 description: string | null;
                 title: string;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.EventStatus;
                 isPublic: boolean;
@@ -126,19 +126,19 @@ export declare class EventsController {
                     email: string;
                     password: string;
                     role: import(".prisma/client").$Enums.Role;
+                    createdAt: Date;
                     id: number;
                     avatar: string | null;
                     isActive: boolean;
                     lastLogin: Date | null;
-                    createdAt: Date;
                     updatedAt: Date;
                 };
             } & {
                 type: import(".prisma/client").$Enums.EventType;
                 description: string | null;
                 title: string;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.EventStatus;
                 isPublic: boolean;

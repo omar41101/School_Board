@@ -8,6 +8,7 @@ import { TeachersManagement } from '../admin/TeachersManagement';
 import { ParentsManagement } from '../admin/ParentsManagement';
 import { CoursesManagement } from '../admin/CoursesManagement';
 import { AnalyticsPage } from '../admin/AnalyticsPage';
+import { PlanningPage } from '../admin/PlanningPage';
 import { SettingsPage } from '../admin/SettingsPage';
 import type { User } from '../../types';
 
@@ -41,6 +42,8 @@ export function AdminDashboard({ view: initialView = 'overview' }: AdminDashboar
         return <CoursesManagement />;
       case 'analytics':
         return <AnalyticsPage />;
+      case 'planning':
+        return <PlanningPage />;
       case 'settings':
         return <SettingsPage />;
       default:

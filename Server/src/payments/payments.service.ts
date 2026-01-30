@@ -8,10 +8,14 @@ export class PaymentsService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(query: any) {
-    const { student, status, type } = query;
+    const { student, parent, status, type } = query;
     const where: any = {};
-    
-    if (student) where.studentId = parseInt(student);
+
+    if (student) {
+      where.studentId = parseInt(student);
+    } else if (parent) {
+      where.student = { parentId: parseInt(parent) };
+    }
     if (status) where.status = status;
     if (type) where.type = type;
 

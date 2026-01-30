@@ -17,12 +17,14 @@ let EventsService = class EventsService {
         this.prisma = prisma;
     }
     async findAll(query) {
-        const { type, status, startDate, endDate } = query;
+        const { type, status, startDate, endDate, organizerId } = query;
         const where = {};
         if (type)
             where.type = type;
         if (status)
             where.status = status;
+        if (organizerId)
+            where.organizerId = parseInt(organizerId);
         if (startDate)
             where.startDate = { gte: new Date(startDate) };
         if (endDate)

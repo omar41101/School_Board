@@ -8,10 +8,12 @@ export class AttendanceService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(query: any) {
-    const { student, date, status } = query;
+    const { student, teacher, course, date, status } = query;
     const where: any = {};
-    
+
     if (student) where.studentId = parseInt(student);
+    if (teacher) where.teacherId = parseInt(teacher);
+    if (course) where.courseId = parseInt(course);
     if (date) where.date = new Date(date);
     if (status) where.status = status;
 

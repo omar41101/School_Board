@@ -1,133 +1,65 @@
 import { useState } from 'react';
+import { useGetStudentsQuery, useGetTeachersQuery, useGetCoursesQuery } from '../../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Progress } from '../ui/progress';
-import { 
-  TrendingUp, 
+import {
+  TrendingUp,
   TrendingDown,
-  Users,
   GraduationCap,
   UserCheck,
   DollarSign,
-  Calendar,
   BookOpen,
   Clock,
-  BarChart3,
   PieChart,
   Download,
   Filter,
   CheckCircle,
   MapPin,
-  Coffee
+  Coffee,
+  BarChart3,
 } from 'lucide-react';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+
+const COLORS = ['#0D1B2A', '#3E92CC', '#5EB2EC', '#7ED2FF', '#A8E6CF', '#FFD93D'];
+
+const EMPTY_CHART_DATA: { month: string; students: number }[] = [];
+const EMPTY_PIE_DATA: { name: string; students: number; value: number }[] = [];
 
 export function AnalyticsPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [timeRange, setTimeRange] = useState('6months');
 
-  // Mock data
-  const enrollmentData = [
-    { month: 'Jan', students: 1200, teachers: 85, revenue: 120000 },
-    { month: 'Feb', students: 1250, teachers: 87, revenue: 125000 },
-    { month: 'Mar', students: 1300, teachers: 90, revenue: 130000 },
-    { month: 'Apr', students: 1350, teachers: 92, revenue: 135000 },
-    { month: 'May', students: 1400, teachers: 95, revenue: 140000 },
-    { month: 'Jun', students: 1450, teachers: 98, revenue: 145000 }
-  ];
+  const { data: studentsRes } = useGetStudentsQuery({ page: 1, limit: 1 });
+  const { data: teachersRes } = useGetTeachersQuery({ page: 1, limit: 1 });
+  const { data: coursesRes } = useGetCoursesQuery({ limit: 1 });
 
-  const performanceData = [
-    { grade: 'Grade 8', average: 85.2, students: 180 },
-    { grade: 'Grade 9', average: 82.8, students: 195 },
-    { grade: 'Grade 10', average: 84.5, students: 210 },
-    { grade: 'Grade 11', average: 87.1, students: 200 },
-    { grade: 'Grade 12', average: 89.3, students: 185 }
-  ];
-
-  const attendanceData = [
-    { month: 'Jan', rate: 94.5 },
-    { month: 'Feb', rate: 93.2 },
-    { month: 'Mar', rate: 95.1 },
-    { month: 'Apr', rate: 92.8 },
-    { month: 'May', rate: 94.7 },
-    { month: 'Jun', rate: 96.2 }
-  ];
-
-  const departmentData = [
-    { name: 'Mathematics', students: 350, value: 25 },
-    { name: 'Sciences', students: 320, value: 23 },
-    { name: 'Languages', students: 280, value: 20 },
-    { name: 'Arts', students: 200, value: 14 },
-    { name: 'Sports', students: 180, value: 13 },
-    { name: 'Others', students: 120, value: 5 }
-  ];
-
-  const revenueData = [
-    { month: 'Jan', tuition: 85000, transport: 15000, meals: 12000, materials: 8000 },
-    { month: 'Feb', tuition: 88000, transport: 16000, meals: 13000, materials: 8500 },
-    { month: 'Mar', tuition: 92000, transport: 17000, meals: 13500, materials: 7500 },
-    { month: 'Apr', tuition: 95000, transport: 18000, meals: 14000, materials: 8000 },
-    { month: 'May', tuition: 98000, transport: 19000, meals: 14500, materials: 8500 },
-    { month: 'Jun', tuition: 102000, transport: 20000, meals: 15000, materials: 8000 }
-  ];
-
-  const COLORS = ['#0D1B2A', '#3E92CC', '#5EB2EC', '#7ED2FF', '#A8E6CF', '#FFD93D'];
+  const totalStudents = (studentsRes as { total?: number })?.total ?? 0;
+  const totalTeachers = (teachersRes as { total?: number })?.total ?? 0;
+  const totalCourses = (coursesRes as { total?: number })?.total ?? coursesRes?.data?.courses?.length ?? 0;
 
   const kpiData = [
-    {
-      title: 'Total Students',
-      value: '1,450',
-      change: '+8.2% from last month',
-      changeType: 'positive' as const,
-      icon: GraduationCap
-    },
-    {
-      title: 'Active Teachers',
-      value: '98',
-      change: '+3 new this month',
-      changeType: 'positive' as const,
-      icon: UserCheck
-    },
-    {
-      title: 'Average Performance',
-      value: '85.8%',
-      change: '+2.1% from last month',
-      changeType: 'positive' as const,
-      icon: TrendingUp
-    },
-    {
-      title: 'Monthly Revenue',
-      value: '$145,000',
-      change: '+7.4% from last month',
-      changeType: 'positive' as const,
-      icon: DollarSign
-    },
-    {
-      title: 'Attendance Rate',
-      value: '96.2%',
-      change: '+1.5% from last month',
-      changeType: 'positive' as const,
-      icon: Clock
-    },
-    {
-      title: 'Completion Rate',
-      value: '94.7%',
-      change: '-0.3% from last month',
-      changeType: 'negative' as const,
-      icon: CheckCircle
-    }
+    { title: 'Total Students', value: String(totalStudents), change: 'Live count', changeType: 'neutral' as const, icon: GraduationCap },
+    { title: 'Teachers', value: String(totalTeachers), change: 'Live count', changeType: 'neutral' as const, icon: UserCheck },
+    { title: 'Courses', value: String(totalCourses), change: 'Live count', changeType: 'neutral' as const, icon: BarChart3 },
+    { title: 'Average Performance', value: '—', change: 'No data', changeType: 'neutral' as const, icon: TrendingUp },
+    { title: 'Attendance', value: '—', change: 'No data', changeType: 'neutral' as const, icon: Clock },
+    { title: 'Completion', value: '—', change: 'No data', changeType: 'neutral' as const, icon: CheckCircle },
   ];
 
   const getTrendIcon = (changeType: 'positive' | 'negative' | 'neutral') => {
-    if (changeType === 'positive') {
-      return <TrendingUp className="h-4 w-4 text-green-500" />;
-    } else if (changeType === 'negative') {
-      return <TrendingDown className="h-4 w-4 text-red-500" />;
-    }
+    if (changeType === 'positive') return <TrendingUp className="h-4 w-4 text-green-500" />;
+    if (changeType === 'negative') return <TrendingDown className="h-4 w-4 text-red-500" />;
     return null;
   };
+
+  const enrollmentData = EMPTY_CHART_DATA.length ? EMPTY_CHART_DATA : [{ month: '—', students: 0 }];
+  const performanceData = [{ grade: '—', average: 0, students: 0 }];
+  const attendanceData = [{ month: '—', rate: 0 }];
+  const departmentData = EMPTY_PIE_DATA.length ? EMPTY_PIE_DATA : [{ name: 'No data', students: 0, value: 1 }];
+  const revenueData = [{ month: '—', tuition: 0, transport: 0, meals: 0, materials: 0 }];
 
   return (
     <div className="space-y-6">
@@ -172,9 +104,7 @@ export function AnalyticsPage() {
                 <p className="text-sm text-gray-600 dark:text-gray-300">{kpi.title}</p>
                 <p className="text-2xl font-bold text-[#0D1B2A] dark:text-white">{kpi.value}</p>
                 <p className={`text-xs mt-1 ${
-                  kpi.changeType === 'positive' ? 'text-green-600' :
-                  kpi.changeType === 'negative' ? 'text-red-600' :
-                  'text-gray-600'
+                  kpi.changeType === 'positive' ? 'text-green-600' : kpi.changeType === 'negative' ? 'text-red-600' : 'text-gray-500'
                 }`}>
                   {kpi.change}
                 </p>

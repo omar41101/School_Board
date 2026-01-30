@@ -4,7 +4,7 @@ import { UpdateAssignmentDto } from './dto/update-assignment.dto';
 export declare class AssignmentsController {
     private readonly assignmentsService;
     constructor(assignmentsService: AssignmentsService);
-    findAll(): Promise<{
+    findAll(query: any): Promise<{
         status: string;
         results: number;
         data: {
@@ -27,8 +27,9 @@ export declare class AssignmentsController {
                     classes: import("@prisma/client/runtime/library").JsonValue | null;
                     schedule: import("@prisma/client/runtime/library").JsonValue | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -36,7 +37,6 @@ export declare class AssignmentsController {
                     addressZipCode: string | null;
                     addressCountry: string | null;
                     status: import(".prisma/client").$Enums.TeacherStatus;
-                    userId: number;
                     joiningDate: Date;
                 };
                 course: {
@@ -49,8 +49,8 @@ export declare class AssignmentsController {
                 title: string;
                 level: string;
                 className: string;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.AssignmentStatus;
                 subject: string;
@@ -79,8 +79,9 @@ export declare class AssignmentsController {
                     classes: import("@prisma/client/runtime/library").JsonValue | null;
                     schedule: import("@prisma/client/runtime/library").JsonValue | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -88,7 +89,6 @@ export declare class AssignmentsController {
                     addressZipCode: string | null;
                     addressCountry: string | null;
                     status: import(".prisma/client").$Enums.TeacherStatus;
-                    userId: number;
                     joiningDate: Date;
                 };
                 course: {
@@ -96,8 +96,8 @@ export declare class AssignmentsController {
                     description: string | null;
                     level: string;
                     schedule: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
                     updatedAt: Date;
                     status: string;
                     code: string;
@@ -115,8 +115,8 @@ export declare class AssignmentsController {
                 title: string;
                 level: string;
                 className: string;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.AssignmentStatus;
                 subject: string;
@@ -145,8 +145,9 @@ export declare class AssignmentsController {
                     classes: import("@prisma/client/runtime/library").JsonValue | null;
                     schedule: import("@prisma/client/runtime/library").JsonValue | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -154,7 +155,6 @@ export declare class AssignmentsController {
                     addressZipCode: string | null;
                     addressCountry: string | null;
                     status: import(".prisma/client").$Enums.TeacherStatus;
-                    userId: number;
                     joiningDate: Date;
                 };
                 course: {
@@ -162,8 +162,8 @@ export declare class AssignmentsController {
                     description: string | null;
                     level: string;
                     schedule: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
                     updatedAt: Date;
                     status: string;
                     code: string;
@@ -181,8 +181,8 @@ export declare class AssignmentsController {
                 title: string;
                 level: string;
                 className: string;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.AssignmentStatus;
                 subject: string;
@@ -211,8 +211,9 @@ export declare class AssignmentsController {
                     classes: import("@prisma/client/runtime/library").JsonValue | null;
                     schedule: import("@prisma/client/runtime/library").JsonValue | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -220,7 +221,6 @@ export declare class AssignmentsController {
                     addressZipCode: string | null;
                     addressCountry: string | null;
                     status: import(".prisma/client").$Enums.TeacherStatus;
-                    userId: number;
                     joiningDate: Date;
                 };
                 course: {
@@ -228,8 +228,8 @@ export declare class AssignmentsController {
                     description: string | null;
                     level: string;
                     schedule: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
                     updatedAt: Date;
                     status: string;
                     code: string;
@@ -247,8 +247,8 @@ export declare class AssignmentsController {
                 title: string;
                 level: string;
                 className: string;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.AssignmentStatus;
                 subject: string;

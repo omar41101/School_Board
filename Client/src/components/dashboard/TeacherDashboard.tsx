@@ -49,7 +49,7 @@ export function TeacherDashboard({ view: initialView = 'overview' }: TeacherDash
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <DashboardHeader user={user as User} />
       <div className="flex">
-        <DashboardSidebar
+      <DashboardSidebar 
           role={(user as User).role || (user as { role: string }).role as 'admin' | 'teacher' | 'student' | 'parent' | 'direction'}
           currentView={currentView}
           onNavigate={setCurrentView}

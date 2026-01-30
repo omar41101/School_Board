@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAppSelector } from '../../store/hooks';
 import { DashboardHeader } from '../layout/DashboardHeader';
 import { DashboardSidebar } from '../layout/DashboardSidebar';
@@ -9,7 +9,12 @@ import { StudentCantine } from '../student/StudentCantine';
 import { MessagesPage } from '../pages/MessagesPage';
 import { EventsPage } from '../pages/EventsPage';
 import { PaymentsPage } from '../pages/PaymentsPage';
-import { useGetGradesQuery, useGetAssignmentsQuery, useGetCoursesQuery } from '../../services/api';
+import {
+  useGetStudentMeQuery,
+  useGetGradesQuery,
+  useGetAssignmentsQuery,
+  useGetCoursesQuery,
+} from '../../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Progress } from '../ui/progress';
 import { Badge } from '../ui/badge';
@@ -32,10 +37,25 @@ interface StudentDashboardProps {
 export function StudentDashboard({ view: initialView = 'overview' }: StudentDashboardProps) {
   const { user } = useAppSelector((state) => state.auth);
   const [currentView, setCurrentView] = useState(initialView);
-  
-  const { data: gradesData } = useGetGradesQuery({ student: (user as User)?.id || (user as { _id: string })?._id });
-  const { data: assignmentsData } = useGetAssignmentsQuery();
-  const { data: coursesData } = useGetCoursesQuery();
+
+  const { data: studentMeData } = useGetStudentMeQuery(undefined, {
+    skip: (user as User)?.role !== 'student',
+  });
+  const studentId = studentMeData?.data?.student?.id;
+
+  const { data: gradesData } = useGetGradesQuery(
+    { student: studentId! },
+    { skip: !studentId },
+  );
+  const { data: coursesData } = useGetCoursesQuery(
+    { student: studentId! },
+    { skip: !studentId },
+  );
+  const courseIds = (coursesData?.data?.courses || []).map((c) => c.id).join(',');
+  const { data: assignmentsData } = useGetAssignmentsQuery(
+    courseIds ? { courseIds } : undefined!,
+    { skip: !courseIds },
+  );
 
   const grades = gradesData?.data?.grades || [];
   const assignments = assignmentsData?.data?.assignments || [];

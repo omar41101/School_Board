@@ -7,8 +7,24 @@ import { UpdateAssignmentDto } from './dto/update-assignment.dto';
 export class AssignmentsService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll() {
+  async findAll(query?: any) {
+    const { course, courseIds } = query || {};
+    const where: any = {};
+
+    if (course) {
+      where.courseId = parseInt(course);
+    } else if (courseIds) {
+      const ids = String(courseIds)
+        .split(',')
+        .map((id) => parseInt(id.trim()))
+        .filter((id) => !isNaN(id));
+      if (ids.length > 0) {
+        where.courseId = { in: ids };
+      }
+    }
+
     const assignments = await this.prisma.assignment.findMany({
+      where,
       include: {
         course: {
           select: {

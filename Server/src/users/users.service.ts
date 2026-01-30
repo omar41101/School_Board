@@ -50,6 +50,7 @@ export class UsersService {
     return {
       status: 'success',
       results: users.length,
+      total,
       totalPages: Math.ceil(total / limit),
       currentPage: parseInt(page),
       data: { users },

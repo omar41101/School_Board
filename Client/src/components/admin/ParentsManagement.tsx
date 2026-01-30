@@ -1,9 +1,9 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import {
   useCreateParentMutation,
   useDeleteParentMutation,
   useGetParentsQuery,
-  useGetUsersQuery,
   useUpdateParentMutation,
 } from '../../services/api';
 import { DataTable, type Column } from '../shared/DataTable';
@@ -12,20 +12,23 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Badge } from '../ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Modal } from '../shared/Modal';
+import { FormModal } from '../shared/FormModal';
+import { ConfirmDeleteDialog } from '../shared/ConfirmDeleteDialog';
+import { PaginatedSelect } from '../shared/PaginatedSelect';
 import { Edit, Plus, Search, Trash2 } from 'lucide-react';
-import type { Parent, User } from '../../types';
+import type { Parent } from '../../types';
 
 export function ParentsManagement() {
-  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
   const [selectedParent, setSelectedParent] = useState<Parent | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [parentToDelete, setParentToDelete] = useState<Parent | null>(null);
 
-  const { data, isLoading } = useGetParentsQuery();
+  const [search, searchDebounced, setSearch] = useDebouncedSearch('', 1000);
+
+  const { data, isLoading } = useGetParentsQuery({ page, limit: 10, search: searchDebounced });
   const parents = data?.data?.parents ?? [];
-
-  const { data: parentUsersData } = useGetUsersQuery({ page: 1, limit: 100, role: 'parent' });
-  const parentUsers = parentUsersData?.data?.users ?? [];
 
   const [createParent, { isLoading: isCreating }] = useCreateParentMutation();
   const [updateParent, { isLoading: isUpdating }] = useUpdateParentMutation();
@@ -74,37 +77,35 @@ export function ParentsManagement() {
   };
 
   const handleSubmit = async () => {
-    if (selectedParent) {
-      await updateParent({
-        id: selectedParent.id,
-        data: {
+    try {
+      if (selectedParent) {
+        await updateParent({
+          id: selectedParent.id,
+          data: {
+            relationship: form.relationship,
+            occupation: form.occupation || undefined,
+            emergencyContactName: form.emergencyContactName || undefined,
+            emergencyContactRelationship: form.emergencyContactRelationship || undefined,
+            emergencyContactPhone: form.emergencyContactPhone || undefined,
+          },
+        }).unwrap();
+        toast.success('Parent updated successfully');
+      } else {
+        await createParent({
+          userId: Number(form.userId),
           relationship: form.relationship,
           occupation: form.occupation || undefined,
           emergencyContactName: form.emergencyContactName || undefined,
           emergencyContactRelationship: form.emergencyContactRelationship || undefined,
           emergencyContactPhone: form.emergencyContactPhone || undefined,
-        },
-      }).unwrap();
-    } else {
-      await createParent({
-        userId: Number(form.userId),
-        relationship: form.relationship,
-        occupation: form.occupation || undefined,
-        emergencyContactName: form.emergencyContactName || undefined,
-        emergencyContactRelationship: form.emergencyContactRelationship || undefined,
-        emergencyContactPhone: form.emergencyContactPhone || undefined,
-      }).unwrap();
+        }).unwrap();
+        toast.success('Parent created successfully');
+      }
+      setIsModalOpen(false);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Operation failed');
     }
-    setIsModalOpen(false);
   };
-
-  const filtered = parents.filter((p) => {
-    if (!search) return true;
-    const needle = search.toLowerCase();
-    const name = `${p.user?.firstName ?? ''} ${p.user?.lastName ?? ''}`.toLowerCase();
-    const email = (p.user?.email ?? '').toLowerCase();
-    return name.includes(needle) || email.includes(needle);
-  });
 
   const columns: Column<Parent>[] = [
     {
@@ -140,18 +141,18 @@ export function ParentsManagement() {
       id: 'actions',
       header: 'Actions',
       cell: (row) => (
-        <div className="flex space-x-2">
-          <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>
+        <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
+          <Button type="button" variant="ghost" size="sm" onClick={() => openEdit(row)}>
             <Edit className="h-4 w-4" />
           </Button>
           <Button
+            type="button"
             variant="ghost"
             size="sm"
             disabled={isDeleting}
-            onClick={async () => {
-              const ok = window.confirm('Delete this parent?');
-              if (!ok) return;
-              await deleteParent(row.id).unwrap();
+            onClick={() => {
+              setParentToDelete(row);
+              setDeleteOpen(true);
             }}
           >
             <Trash2 className="h-4 w-4 text-destructive" />
@@ -168,7 +169,7 @@ export function ParentsManagement() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Parents Management</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">Manage all parents in the system</p>
         </div>
-        <Button onClick={openCreate}>
+        <Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); openCreate(); }}>
           <Plus className="mr-2 h-4 w-4" />
           Add Parent
         </Button>
@@ -186,19 +187,30 @@ export function ParentsManagement() {
         </div>
       </div>
 
-      <DataTable data={filtered} columns={columns} isLoading={isLoading} emptyMessage="No parents found" />
+      <DataTable
+        data={parents}
+        columns={columns}
+        isLoading={isLoading}
+        emptyMessage="No parents found"
+        pagination={{
+          page,
+          pageSize: 10,
+          total: data?.total ?? 0,
+          onPageChange: setPage,
+        }}
+      />
 
-      <Modal
+      <FormModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         title={selectedParent ? 'Edit Parent' : 'Add Parent'}
         size="lg"
         footer={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSubmit} disabled={isCreating || isUpdating || (!selectedParent && !form.userId)}>
+            <Button type="button" onClick={handleSubmit} disabled={isCreating || isUpdating || (!selectedParent && !form.userId)}>
               {isCreating || isUpdating ? 'Saving...' : 'Save'}
             </Button>
           </div>
@@ -208,23 +220,18 @@ export function ParentsManagement() {
           {!selectedParent && (
             <div className="space-y-2 md:col-span-2">
               <Label>User (role: parent)</Label>
-              <Select value={form.userId} onValueChange={(v) => setForm((p) => ({ ...p, userId: v }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a parent user..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {parentUsers.map((u: User) => (
-                    <SelectItem key={u.id} value={String(u.id)}>
-                      {u.firstName} {u.lastName} ({u.email})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <PaginatedSelect
+                resource="users"
+                role="parent"
+                value={form.userId}
+                onValueChange={(v) => setForm((p) => ({ ...p, userId: v }))}
+                placeholder="Select a parent user..."
+              />
               <p className="text-xs text-muted-foreground">
                 Create the user first in “Users” if you don’t see it here.
               </p>
-            </div>
-          )}
+                        </div>
+                      )}
 
           <div className="space-y-2">
             <Label>Relationship</Label>
@@ -238,27 +245,46 @@ export function ParentsManagement() {
                 <SelectItem value="guardian">guardian</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+                    </div>
 
           <div className="space-y-2">
             <Label>Occupation</Label>
             <Input value={form.occupation} onChange={(e) => setForm((p) => ({ ...p, occupation: e.target.value }))} />
-          </div>
+                    </div>
 
           <div className="space-y-2">
             <Label>Emergency contact name</Label>
             <Input value={form.emergencyContactName} onChange={(e) => setForm((p) => ({ ...p, emergencyContactName: e.target.value }))} />
-          </div>
-          <div className="space-y-2">
+                      </div>
+                      <div className="space-y-2">
             <Label>Emergency contact relationship</Label>
             <Input value={form.emergencyContactRelationship} onChange={(e) => setForm((p) => ({ ...p, emergencyContactRelationship: e.target.value }))} />
-          </div>
+                            </div>
           <div className="space-y-2 md:col-span-2">
             <Label>Emergency contact phone</Label>
             <Input value={form.emergencyContactPhone} onChange={(e) => setForm((p) => ({ ...p, emergencyContactPhone: e.target.value }))} />
-          </div>
-        </div>
-      </Modal>
+                              </div>
+                            </div>
+      </FormModal>
+
+      <ConfirmDeleteDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete parent"
+        itemName={parentToDelete ? `${parentToDelete.user?.firstName ?? ''} ${parentToDelete.user?.lastName ?? ''}`.trim() : undefined}
+        onConfirm={async () => {
+          if (!parentToDelete) return;
+          try {
+            await deleteParent(parentToDelete.id).unwrap();
+            toast.success('Parent deleted successfully');
+            setParentToDelete(null);
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'Delete failed');
+            throw err;
+          }
+        }}
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

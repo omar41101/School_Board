@@ -41,6 +41,7 @@ export interface AuthResponse {
 class AuthService {
   private static instance: AuthService;
   private readonly TOKEN_KEY = 'token';
+  private readonly REFRESH_TOKEN_KEY = 'refreshToken';
   private readonly USER_KEY = 'user';
 
   private constructor() {}
@@ -168,6 +169,14 @@ class AuthService {
     apiClient.setToken(token);
   }
 
+  setRefreshToken(refreshToken: string): void {
+    localStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
+  }
+
+  getRefreshToken(): string | null {
+    return localStorage.getItem(this.REFRESH_TOKEN_KEY);
+  }
+
   /**
    * Get stored user
    */
@@ -195,13 +204,13 @@ class AuthService {
    */
   private clearAuth(): void {
     localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
     apiClient.setToken(null);
   }
 
   /**
-   * Initialize authentication state
-   * Call this on app startup
+   * Initialize authentication state. Uses refresh token to keep session 7 days.
    */
   async initialize(): Promise<User | null> {
     const token = this.getToken();
@@ -211,17 +220,29 @@ class AuthService {
       return null;
     }
 
-    // Set token in API client
     apiClient.setToken(token);
 
-    // Try to verify token with server
     try {
       const user = await this.getCurrentUser();
       return user;
     } catch (error) {
-      console.error('Failed to initialize auth:', error);
-      // Return stored user if available (offline mode)
-      return storedUser;
+      const refreshToken = this.getRefreshToken();
+      if (refreshToken) {
+        try {
+          const res = await authApi.refresh(refreshToken) as { token?: string; accessToken?: string; refreshToken?: string; data?: User };
+          const newAccess = res?.accessToken ?? res?.token;
+          if (newAccess) {
+            this.setToken(newAccess);
+            if (res?.refreshToken) this.setRefreshToken(res.refreshToken);
+            const user = await this.getCurrentUser();
+            return user;
+          }
+        } catch (refreshErr) {
+          console.error('Refresh failed:', refreshErr);
+        }
+      }
+      this.clearAuth();
+      return null;
     }
   }
 }

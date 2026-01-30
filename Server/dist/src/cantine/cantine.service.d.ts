@@ -27,8 +27,9 @@ export declare class CantineService {
                     section: string | null;
                     parentId: number | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -42,12 +43,11 @@ export declare class CantineService {
                     emergencyContactPhone: string | null;
                     previousSchoolName: string | null;
                     previousSchoolYear: string | null;
-                    userId: number;
                 };
             } & {
                 items: import("@prisma/client/runtime/library").JsonValue;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.CantineStatus;
                 studentId: number;
@@ -75,8 +75,9 @@ export declare class CantineService {
                     section: string | null;
                     parentId: number | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -90,12 +91,11 @@ export declare class CantineService {
                     emergencyContactPhone: string | null;
                     previousSchoolName: string | null;
                     previousSchoolYear: string | null;
-                    userId: number;
                 };
             } & {
                 items: import("@prisma/client/runtime/library").JsonValue;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.CantineStatus;
                 studentId: number;
@@ -123,8 +123,9 @@ export declare class CantineService {
                     section: string | null;
                     parentId: number | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -138,12 +139,11 @@ export declare class CantineService {
                     emergencyContactPhone: string | null;
                     previousSchoolName: string | null;
                     previousSchoolYear: string | null;
-                    userId: number;
                 };
             } & {
                 items: import("@prisma/client/runtime/library").JsonValue;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.CantineStatus;
                 studentId: number;
@@ -171,8 +171,9 @@ export declare class CantineService {
                     section: string | null;
                     parentId: number | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -186,12 +187,11 @@ export declare class CantineService {
                     emergencyContactPhone: string | null;
                     previousSchoolName: string | null;
                     previousSchoolYear: string | null;
-                    userId: number;
                 };
             } & {
                 items: import("@prisma/client/runtime/library").JsonValue;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.CantineStatus;
                 studentId: number;
@@ -219,8 +219,9 @@ export declare class CantineService {
                     section: string | null;
                     parentId: number | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -234,12 +235,11 @@ export declare class CantineService {
                     emergencyContactPhone: string | null;
                     previousSchoolName: string | null;
                     previousSchoolYear: string | null;
-                    userId: number;
                 };
             } & {
                 items: import("@prisma/client/runtime/library").JsonValue;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.CantineStatus;
                 studentId: number;

@@ -19,6 +19,7 @@ const auth_service_1 = require("./auth.service");
 const register_dto_1 = require("./dto/register.dto");
 const login_dto_1 = require("./dto/login.dto");
 const update_password_dto_1 = require("./dto/update-password.dto");
+const refresh_token_dto_1 = require("./dto/refresh-token.dto");
 const jwt_auth_guard_1 = require("./guards/jwt-auth.guard");
 const get_user_decorator_1 = require("./decorators/get-user.decorator");
 const public_decorator_1 = require("./decorators/public.decorator");
@@ -36,7 +37,13 @@ let AuthController = class AuthController {
         }
         return this.authService.login(user);
     }
+    async refresh(dto) {
+        return this.authService.refresh(dto.refreshToken);
+    }
     async getMe(userId) {
+        return this.authService.getMe(userId);
+    }
+    async getCurrent(userId) {
         return this.authService.getMe(userId);
     }
     async updatePassword(userId, updatePasswordDto) {
@@ -70,6 +77,16 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
 __decorate([
+    (0, public_decorator_1.Public)(),
+    (0, common_1.Post)('refresh'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: 'Refresh access token (7-day session)' }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [refresh_token_dto_1.RefreshTokenDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "refresh", null);
+__decorate([
     (0, common_1.Get)('me'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
@@ -79,6 +96,16 @@ __decorate([
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "getMe", null);
+__decorate([
+    (0, common_1.Get)('current'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Alias for get current user' }),
+    __param(0, (0, get_user_decorator_1.GetUser)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "getCurrent", null);
 __decorate([
     (0, common_1.Post)('update-password'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

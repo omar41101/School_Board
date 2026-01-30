@@ -1,9 +1,9 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import {
   useCreateTeacherMutation,
   useDeleteTeacherMutation,
   useGetTeachersQuery,
-  useGetUsersQuery,
   useUpdateTeacherMutation,
 } from '../../services/api';
 import { DataTable, type Column } from '../shared/DataTable';
@@ -11,19 +11,22 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Modal } from '../shared/Modal';
+import { FormModal } from '../shared/FormModal';
+import { ConfirmDeleteDialog } from '../shared/ConfirmDeleteDialog';
+import { PaginatedSelect } from '../shared/PaginatedSelect';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import { Badge } from '../ui/badge';
-import type { Teacher, User } from '../../types';
+import type { Teacher } from '../../types';
 
 export function TeachersManagement() {
-  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [search, searchDebounced, setSearch] = useDebouncedSearch('', 1000);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [teacherToDelete, setTeacherToDelete] = useState<Teacher | null>(null);
 
-  const { data, isLoading } = useGetTeachersQuery();
-  const { data: teacherUsersData } = useGetUsersQuery({ page: 1, limit: 100, role: 'teacher' });
-  const teacherUsers = teacherUsersData?.data?.users ?? [];
+  const { data, isLoading } = useGetTeachersQuery({ page, limit: 10, search: searchDebounced });
 
   const [createTeacher, { isLoading: isCreating }] = useCreateTeacherMutation();
   const [updateTeacher, { isLoading: isUpdating }] = useUpdateTeacherMutation();
@@ -82,29 +85,35 @@ export function TeachersManagement() {
   };
 
   const handleSubmit = async () => {
-    if (selectedTeacher) {
-      await updateTeacher({
-        id: selectedTeacher.id,
-        data: {
-          ...(form.qualification && { qualification: form.qualification }),
-          ...(form.specialization && { specialization: form.specialization }),
-          ...(form.salary && { salary: Number(form.salary) }),
+    try {
+      if (selectedTeacher) {
+        await updateTeacher({
+          id: selectedTeacher.id,
+          data: {
+            ...(form.qualification && { qualification: form.qualification }),
+            ...(form.specialization && { specialization: form.specialization }),
+            ...(form.salary && { salary: Number(form.salary) }),
+            ...(form.experience && { experience: Number(form.experience) }),
+          },
+        }).unwrap();
+        toast.success('Teacher updated successfully');
+      } else {
+        await createTeacher({
+          userId: Number(form.userId),
+          employeeId: form.employeeId,
+          dateOfBirth: form.dateOfBirth,
+          gender: form.gender,
+          qualification: form.qualification,
+          specialization: form.specialization,
+          salary: Number(form.salary),
           ...(form.experience && { experience: Number(form.experience) }),
-        },
-      }).unwrap();
-    } else {
-      await createTeacher({
-        userId: Number(form.userId),
-        employeeId: form.employeeId,
-        dateOfBirth: form.dateOfBirth,
-        gender: form.gender,
-        qualification: form.qualification,
-        specialization: form.specialization,
-        salary: Number(form.salary),
-        ...(form.experience && { experience: Number(form.experience) }),
-      }).unwrap();
+        }).unwrap();
+        toast.success('Teacher created successfully');
+      }
+      setIsModalOpen(false);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Operation failed');
     }
-    setIsModalOpen(false);
   };
 
   const columns: Column<Teacher>[] = [
@@ -163,24 +172,18 @@ export function TeachersManagement() {
       id: 'actions',
       header: 'Actions',
       cell: (row) => (
-        <div className="flex space-x-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              openEdit(row);
-            }}
-          >
+        <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
+          <Button type="button" variant="ghost" size="sm" onClick={() => openEdit(row)}>
             <Edit className="h-4 w-4" />
           </Button>
           <Button
+            type="button"
             variant="ghost"
             size="sm"
             disabled={isDeleting}
-            onClick={async () => {
-              const ok = window.confirm('Delete this teacher?');
-              if (!ok) return;
-              await deleteTeacher(row.id).unwrap();
+            onClick={() => {
+              setTeacherToDelete(row);
+              setDeleteOpen(true);
             }}
           >
             <Trash2 className="h-4 w-4 text-destructive" />
@@ -199,7 +202,7 @@ export function TeachersManagement() {
             Manage all teachers in the system
           </p>
         </div>
-        <Button onClick={openCreate}>
+        <Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); openCreate(); }}>
           <Plus className="mr-2 h-4 w-4" />
           Add Teacher
         </Button>
@@ -222,22 +225,29 @@ export function TeachersManagement() {
         columns={columns}
         isLoading={isLoading}
         emptyMessage="No teachers found"
+        pagination={{
+          page,
+          pageSize: 10,
+          total: data?.total ?? 0,
+          onPageChange: setPage,
+        }}
         onRowClick={(row) => {
           openEdit(row);
         }}
       />
 
-      <Modal
+      <FormModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         title={selectedTeacher ? 'Edit Teacher' : 'Add New Teacher'}
         size="lg"
         footer={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>
             <Button
+              type="button"
               onClick={handleSubmit}
               disabled={isCreating || isUpdating || (!selectedTeacher && !form.userId)}
             >
@@ -313,7 +323,26 @@ export function TeachersManagement() {
             </p>
           </div>
         </div>
-      </Modal>
+      </FormModal>
+
+      <ConfirmDeleteDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete teacher"
+        itemName={teacherToDelete ? `${(teacherToDelete.user as { firstName?: string })?.firstName ?? ''} ${(teacherToDelete.user as { lastName?: string })?.lastName ?? ''}`.trim() || teacherToDelete.employeeId : undefined}
+        onConfirm={async () => {
+          if (!teacherToDelete) return;
+          try {
+            await deleteTeacher(teacherToDelete.id).unwrap();
+            toast.success('Teacher deleted successfully');
+            setTeacherToDelete(null);
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'Delete failed');
+            throw err;
+          }
+        }}
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

@@ -7,7 +7,9 @@ export declare class StudentsController {
     findAll(query: any): Promise<{
         status: string;
         results: number;
+        total: number;
         totalPages: number;
+        currentPage: number;
         data: {
             students: ({
                 user: {
@@ -21,8 +23,9 @@ export declare class StudentsController {
                 parent: {
                     relationship: import(".prisma/client").$Enums.Relationship;
                     occupation: string | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -33,7 +36,6 @@ export declare class StudentsController {
                     emergencyContactName: string | null;
                     emergencyContactRelationship: string | null;
                     emergencyContactPhone: string | null;
-                    userId: number;
                 };
             } & {
                 bloodGroup: string | null;
@@ -47,8 +49,9 @@ export declare class StudentsController {
                 section: string | null;
                 parentId: number | null;
                 documents: import("@prisma/client/runtime/library").JsonValue | null;
-                id: number;
                 createdAt: Date;
+                id: number;
+                userId: number;
                 updatedAt: Date;
                 addressStreet: string | null;
                 addressCity: string | null;
@@ -62,7 +65,6 @@ export declare class StudentsController {
                 emergencyContactPhone: string | null;
                 previousSchoolName: string | null;
                 previousSchoolYear: string | null;
-                userId: number;
             })[];
         };
     }>;
@@ -83,8 +85,9 @@ export declare class StudentsController {
                 parent: {
                     relationship: import(".prisma/client").$Enums.Relationship;
                     occupation: string | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -95,7 +98,6 @@ export declare class StudentsController {
                     emergencyContactName: string | null;
                     emergencyContactRelationship: string | null;
                     emergencyContactPhone: string | null;
-                    userId: number;
                 };
             } & {
                 bloodGroup: string | null;
@@ -109,8 +111,9 @@ export declare class StudentsController {
                 section: string | null;
                 parentId: number | null;
                 documents: import("@prisma/client/runtime/library").JsonValue | null;
-                id: number;
                 createdAt: Date;
+                id: number;
+                userId: number;
                 updatedAt: Date;
                 addressStreet: string | null;
                 addressCity: string | null;
@@ -124,7 +127,6 @@ export declare class StudentsController {
                 emergencyContactPhone: string | null;
                 previousSchoolName: string | null;
                 previousSchoolYear: string | null;
-                userId: number;
             };
         };
     }>;
@@ -143,8 +145,9 @@ export declare class StudentsController {
                 parent: {
                     relationship: import(".prisma/client").$Enums.Relationship;
                     occupation: string | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -155,7 +158,6 @@ export declare class StudentsController {
                     emergencyContactName: string | null;
                     emergencyContactRelationship: string | null;
                     emergencyContactPhone: string | null;
-                    userId: number;
                 };
             } & {
                 bloodGroup: string | null;
@@ -169,8 +171,9 @@ export declare class StudentsController {
                 section: string | null;
                 parentId: number | null;
                 documents: import("@prisma/client/runtime/library").JsonValue | null;
-                id: number;
                 createdAt: Date;
+                id: number;
+                userId: number;
                 updatedAt: Date;
                 addressStreet: string | null;
                 addressCity: string | null;
@@ -184,7 +187,6 @@ export declare class StudentsController {
                 emergencyContactPhone: string | null;
                 previousSchoolName: string | null;
                 previousSchoolYear: string | null;
-                userId: number;
             };
         };
     }>;
@@ -212,8 +214,9 @@ export declare class StudentsController {
                 section: string | null;
                 parentId: number | null;
                 documents: import("@prisma/client/runtime/library").JsonValue | null;
-                id: number;
                 createdAt: Date;
+                id: number;
+                userId: number;
                 updatedAt: Date;
                 addressStreet: string | null;
                 addressCity: string | null;
@@ -227,7 +230,6 @@ export declare class StudentsController {
                 emergencyContactPhone: string | null;
                 previousSchoolName: string | null;
                 previousSchoolYear: string | null;
-                userId: number;
             };
         };
     }>;
@@ -255,8 +257,9 @@ export declare class StudentsController {
                 section: string | null;
                 parentId: number | null;
                 documents: import("@prisma/client/runtime/library").JsonValue | null;
-                id: number;
                 createdAt: Date;
+                id: number;
+                userId: number;
                 updatedAt: Date;
                 addressStreet: string | null;
                 addressCity: string | null;
@@ -270,7 +273,6 @@ export declare class StudentsController {
                 emergencyContactPhone: string | null;
                 previousSchoolName: string | null;
                 previousSchoolYear: string | null;
-                userId: number;
             };
         };
     }>;

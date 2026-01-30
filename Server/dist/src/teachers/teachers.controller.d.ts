@@ -4,9 +4,12 @@ import { UpdateTeacherDto } from './dto/update-teacher.dto';
 export declare class TeachersController {
     private readonly teachersService;
     constructor(teachersService: TeachersService);
-    findAll(): Promise<{
+    findAll(query: any): Promise<{
         status: string;
         results: number;
+        total: number;
+        totalPages: number;
+        currentPage: number;
         data: {
             teachers: ({
                 user: {
@@ -29,8 +32,9 @@ export declare class TeachersController {
                 classes: import("@prisma/client/runtime/library").JsonValue | null;
                 schedule: import("@prisma/client/runtime/library").JsonValue | null;
                 documents: import("@prisma/client/runtime/library").JsonValue | null;
-                id: number;
                 createdAt: Date;
+                id: number;
+                userId: number;
                 updatedAt: Date;
                 addressStreet: string | null;
                 addressCity: string | null;
@@ -38,7 +42,6 @@ export declare class TeachersController {
                 addressZipCode: string | null;
                 addressCountry: string | null;
                 status: import(".prisma/client").$Enums.TeacherStatus;
-                userId: number;
                 joiningDate: Date;
             })[];
         };
@@ -69,8 +72,9 @@ export declare class TeachersController {
                 classes: import("@prisma/client/runtime/library").JsonValue | null;
                 schedule: import("@prisma/client/runtime/library").JsonValue | null;
                 documents: import("@prisma/client/runtime/library").JsonValue | null;
-                id: number;
                 createdAt: Date;
+                id: number;
+                userId: number;
                 updatedAt: Date;
                 addressStreet: string | null;
                 addressCity: string | null;
@@ -78,7 +82,6 @@ export declare class TeachersController {
                 addressZipCode: string | null;
                 addressCountry: string | null;
                 status: import(".prisma/client").$Enums.TeacherStatus;
-                userId: number;
                 joiningDate: Date;
             };
         };
@@ -94,11 +97,11 @@ export declare class TeachersController {
                     email: string;
                     password: string;
                     role: import(".prisma/client").$Enums.Role;
+                    createdAt: Date;
                     id: number;
                     avatar: string | null;
                     isActive: boolean;
                     lastLogin: Date | null;
-                    createdAt: Date;
                     updatedAt: Date;
                 };
             } & {
@@ -113,8 +116,9 @@ export declare class TeachersController {
                 classes: import("@prisma/client/runtime/library").JsonValue | null;
                 schedule: import("@prisma/client/runtime/library").JsonValue | null;
                 documents: import("@prisma/client/runtime/library").JsonValue | null;
-                id: number;
                 createdAt: Date;
+                id: number;
+                userId: number;
                 updatedAt: Date;
                 addressStreet: string | null;
                 addressCity: string | null;
@@ -122,7 +126,6 @@ export declare class TeachersController {
                 addressZipCode: string | null;
                 addressCountry: string | null;
                 status: import(".prisma/client").$Enums.TeacherStatus;
-                userId: number;
                 joiningDate: Date;
             };
         };
@@ -151,8 +154,9 @@ export declare class TeachersController {
                 classes: import("@prisma/client/runtime/library").JsonValue | null;
                 schedule: import("@prisma/client/runtime/library").JsonValue | null;
                 documents: import("@prisma/client/runtime/library").JsonValue | null;
-                id: number;
                 createdAt: Date;
+                id: number;
+                userId: number;
                 updatedAt: Date;
                 addressStreet: string | null;
                 addressCity: string | null;
@@ -160,7 +164,6 @@ export declare class TeachersController {
                 addressZipCode: string | null;
                 addressCountry: string | null;
                 status: import(".prisma/client").$Enums.TeacherStatus;
-                userId: number;
                 joiningDate: Date;
             };
         };
@@ -176,11 +179,11 @@ export declare class TeachersController {
                     email: string;
                     password: string;
                     role: import(".prisma/client").$Enums.Role;
+                    createdAt: Date;
                     id: number;
                     avatar: string | null;
                     isActive: boolean;
                     lastLogin: Date | null;
-                    createdAt: Date;
                     updatedAt: Date;
                 };
             } & {
@@ -195,8 +198,9 @@ export declare class TeachersController {
                 classes: import("@prisma/client/runtime/library").JsonValue | null;
                 schedule: import("@prisma/client/runtime/library").JsonValue | null;
                 documents: import("@prisma/client/runtime/library").JsonValue | null;
-                id: number;
                 createdAt: Date;
+                id: number;
+                userId: number;
                 updatedAt: Date;
                 addressStreet: string | null;
                 addressCity: string | null;
@@ -204,7 +208,6 @@ export declare class TeachersController {
                 addressZipCode: string | null;
                 addressCountry: string | null;
                 status: import(".prisma/client").$Enums.TeacherStatus;
-                userId: number;
                 joiningDate: Date;
             };
         };

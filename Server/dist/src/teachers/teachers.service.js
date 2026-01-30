@@ -16,24 +16,47 @@ let TeachersService = class TeachersService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async findAll() {
-        const teachers = await this.prisma.teacher.findMany({
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        firstName: true,
-                        lastName: true,
-                        email: true,
-                        avatar: true,
-                        phone: true,
+    async findAll(query = {}) {
+        const { page = 1, limit = 10, search } = query;
+        const where = {};
+        if (search) {
+            where.user = {
+                OR: [
+                    { firstName: { contains: search, mode: 'insensitive' } },
+                    { lastName: { contains: search, mode: 'insensitive' } },
+                    { email: { contains: search, mode: 'insensitive' } },
+                ],
+            };
+        }
+        const skip = (Number(page) - 1) * Number(limit);
+        const take = Number(limit);
+        const [teachers, total] = await Promise.all([
+            this.prisma.teacher.findMany({
+                where,
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            firstName: true,
+                            lastName: true,
+                            email: true,
+                            avatar: true,
+                            phone: true,
+                        },
                     },
                 },
-            },
-        });
+                skip,
+                take,
+                orderBy: { createdAt: 'desc' },
+            }),
+            this.prisma.teacher.count({ where }),
+        ]);
         return {
             status: 'success',
             results: teachers.length,
+            total,
+            totalPages: Math.ceil(total / take),
+            currentPage: Number(page),
             data: { teachers },
         };
     }

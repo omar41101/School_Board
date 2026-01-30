@@ -1,4 +1,12 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
+import {
+  useGetParentMeQuery,
+  useGetTeachersQuery,
+  useGetMessagesQuery,
+  useGetEventsQuery,
+  useCreateMessageMutation,
+} from '../../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -9,7 +17,7 @@ import { Textarea } from '../ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Label } from '../ui/label';
 import { Separator } from '../ui/separator';
-import { 
+import {
   MessageSquare,
   Send,
   Search,
@@ -26,210 +34,128 @@ import {
   Paperclip,
   Star,
   Reply,
-  Forward
+  Forward,
+  Loader2,
 } from 'lucide-react';
-
-interface Teacher {
-  id: string;
-  name: string;
-  subject: string;
-  avatar: string;
-  email: string;
-  phone: string;
-  officeHours: string;
-  nextAvailable: string;
-}
-
-interface Message {
-  id: string;
-  from: string;
-  fromRole: 'teacher' | 'parent' | 'admin';
-  to: string;
-  subject: string;
-  content: string;
-  timestamp: string;
-  read: boolean;
-  priority: 'high' | 'medium' | 'low';
-  attachments?: string[];
-  replies?: Message[];
-}
-
-interface Meeting {
-  id: string;
-  title: string;
-  teacher: string;
-  subject: string;
-  date: string;
-  time: string;
-  duration: number;
-  type: 'in_person' | 'video' | 'phone';
-  status: 'scheduled' | 'completed' | 'cancelled' | 'requested';
-  notes?: string;
-}
+import type { Teacher, Message, Event } from '../../types';
 
 export function ParentCommunicationPage() {
   const [selectedTeacher, setSelectedTeacher] = useState('');
-  const [selectedChild, setSelectedChild] = useState('emma');
+  const [selectedChild, setSelectedChild] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [newMessage, setNewMessage] = useState({
     to: '',
     subject: '',
     content: '',
-    priority: 'medium'
+    priority: 'medium' as 'low' | 'medium' | 'high',
   });
 
-  const mockTeachers: Teacher[] = [
-    {
-      id: '1',
-      name: 'Dr. Marie Dubois',
-      subject: 'Mathematics',
-      avatar: '/api/placeholder/40/40',
-      email: 'marie.dubois@school.com',
-      phone: '+1 (555) 123-4567',
-      officeHours: 'Mon-Wed 2:00-4:00 PM',
-      nextAvailable: 'Tomorrow at 2:30 PM'
-    },
-    {
-      id: '2',
-      name: 'Prof. Jean Martin',
-      subject: 'Physics',
-      avatar: '/api/placeholder/40/40',
-      email: 'jean.martin@school.com',
-      phone: '+1 (555) 987-6543',
-      officeHours: 'Tue-Thu 1:00-3:00 PM',
-      nextAvailable: 'Today at 3:00 PM'
-    },
-    {
-      id: '3',
-      name: 'Mme. Sophie Laurent',
-      subject: 'Literature',
-      avatar: '/api/placeholder/40/40',
-      email: 'sophie.laurent@school.com',
-      phone: '+1 (555) 456-7890',
-      officeHours: 'Mon-Fri 3:30-4:30 PM',
-      nextAvailable: 'Friday at 4:00 PM'
-    }
-  ];
+  const { data: parentMeData } = useGetParentMeQuery();
+  const parentUserId = parentMeData?.data?.parent?.userId;
+  const children = parentMeData?.data?.parent?.children ?? [];
 
-  const mockMessages: Message[] = [
-    {
-      id: '1',
-      from: 'Dr. Marie Dubois',
-      fromRole: 'teacher',
-      to: 'Parent',
-      subject: 'Emma\'s Excellent Progress in Mathematics',
-      content: 'I wanted to reach out to share some wonderful news about Emma\'s progress in mathematics. She has shown remarkable improvement in understanding quadratic equations and has been actively participating in class discussions. Her recent test score of 95% demonstrates her dedication to learning. Keep up the great work!',
-      timestamp: '2024-01-20 14:30',
-      read: false,
-      priority: 'medium',
-      attachments: [],
-      replies: []
-    },
-    {
-      id: '2',
-      from: 'Prof. Jean Martin',
-      fromRole: 'teacher',
-      to: 'Parent',
-      subject: 'Physics Lab Assignment - Requires Attention',
-      content: 'Emma has been doing well in physics theory, but I\'ve noticed she seems to struggle a bit with the hands-on lab work. I would recommend some additional practice with laboratory procedures. Would you be available for a brief meeting to discuss how we can support her better?',
-      timestamp: '2024-01-19 16:45',
-      read: true,
-      priority: 'high',
-      attachments: ['lab_report_feedback.pdf'],
-      replies: []
-    },
-    {
-      id: '3',
-      from: 'School Administration',
-      fromRole: 'admin',
-      to: 'Parent',
-      subject: 'Parent-Teacher Conference Reminder',
-      content: 'This is a friendly reminder that the monthly parent-teacher conferences are scheduled for next week. Please confirm your attendance and let us know if you need to reschedule any appointments.',
-      timestamp: '2024-01-18 09:15',
-      read: true,
-      priority: 'medium',
-      attachments: ['conference_schedule.pdf'],
-      replies: []
-    }
-  ];
+  const { data: teachersData, isLoading: teachersLoading } = useGetTeachersQuery({
+    page: 1,
+    limit: 10,
+  });
+  const teachers: Teacher[] = teachersData?.data?.teachers ?? [];
 
-  const mockMeetings: Meeting[] = [
-    {
-      id: '1',
-      title: 'Mathematics Progress Discussion',
-      teacher: 'Dr. Marie Dubois',
-      subject: 'Mathematics',
-      date: '2024-01-25',
-      time: '15:00',
-      duration: 30,
-      type: 'in_person',
-      status: 'scheduled',
-      notes: 'Discuss Emma\'s advanced placement options'
-    },
-    {
-      id: '2',
-      title: 'Physics Lab Support Meeting',
-      teacher: 'Prof. Jean Martin',
-      subject: 'Physics',
-      date: '2024-01-23',
-      time: '16:30',
-      duration: 20,
-      type: 'video',
-      status: 'requested',
-      notes: 'Address lab work concerns and create support plan'
-    },
-    {
-      id: '3',
-      title: 'Literature Essay Review',
-      teacher: 'Mme. Sophie Laurent',
-      subject: 'Literature',
-      date: '2024-01-20',
-      time: '14:00',
-      duration: 25,
-      type: 'in_person',
-      status: 'completed',
-      notes: 'Reviewed Emma\'s poetry analysis - excellent work'
-    }
-  ];
+  const { data: messagesData, isLoading: messagesLoading } = useGetMessagesQuery(
+    { inbox: true, limit: 10 },
+    { skip: !parentUserId }
+  );
+  const messages: Message[] = messagesData?.data?.messages ?? [];
+
+  const { data: eventsData, isLoading: eventsLoading } = useGetEventsQuery({ type: 'meeting' });
+  const events: Event[] = eventsData?.data?.events ?? [];
+
+  const [createMessage, { isLoading: isSending }] = useCreateMessageMutation();
+
+  const filteredMessages = messages.filter((msg) => {
+    if (!searchTerm) return true;
+    const s = searchTerm.toLowerCase();
+    return (
+      msg.subject.toLowerCase().includes(s) ||
+      msg.content.toLowerCase().includes(s) ||
+      (msg.sender && `${(msg.sender as { firstName?: string }).firstName} ${(msg.sender as { lastName?: string }).lastName}`.toLowerCase().includes(s))
+    );
+  });
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800 border-red-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'high':
+        return 'bg-red-100 text-red-800';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'low':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'scheduled': return 'bg-blue-100 text-blue-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      case 'requested': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'scheduled':
+        return 'bg-blue-100 text-blue-800';
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      case 'requested':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'video': return <Video className="h-4 w-4" />;
-      case 'phone': return <Phone className="h-4 w-4" />;
-      case 'in_person': return <User className="h-4 w-4" />;
-      default: return <Calendar className="h-4 w-4" />;
+      case 'video':
+        return <Video className="h-4 w-4" />;
+      case 'phone':
+        return <Phone className="h-4 w-4" />;
+      default:
+        return <User className="h-4 w-4" />;
     }
   };
+
+  const handleSendMessage = async () => {
+    const recipientUserId = newMessage.to ? Number(newMessage.to) : teachers.find((t) => String(t.userId) === newMessage.to)?.userId;
+    if (!recipientUserId || !newMessage.subject || !newMessage.content) {
+      toast.error('Please fill in recipient, subject, and message');
+      return;
+    }
+    try {
+      await createMessage({
+        recipientId: recipientUserId,
+        subject: newMessage.subject,
+        content: newMessage.content,
+      }).unwrap();
+      toast.success('Message sent successfully');
+      setNewMessage({ to: '', subject: '', content: '', priority: 'medium' });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to send message');
+    }
+  };
+
+  if (teachersLoading || messagesLoading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="h-8 w-8 animate-spin text-[#3E92CC]" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#0D1B2A] dark:text-white">Teacher Communication</h1>
-          <p className="text-gray-600 dark:text-gray-400">Stay connected with your child's teachers</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Communication</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            Messages, teachers, and meetings
+          </p>
         </div>
-        <Button className="bg-[#0D1B2A] hover:bg-[#1B2B3A] text-white">
-          <Plus className="mr-2 h-4 w-4" />
-          New Message
-        </Button>
       </div>
 
       <Tabs defaultValue="messages" className="w-full">
@@ -243,218 +169,178 @@ export function ParentCommunicationPage() {
         <TabsContent value="messages" className="mt-6">
           <div className="space-y-6">
             <div className="flex items-center space-x-4">
-              <div className="flex-1 max-w-md">
-                <Input placeholder="Search messages..." />
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search messages..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
               </div>
-              <Button variant="outline">
-                <Filter className="mr-2 h-4 w-4" />
-                Filter
-              </Button>
             </div>
-
             <div className="space-y-4">
-              {mockMessages.map((message) => (
-                <Card key={message.id} className={`hover:shadow-lg transition-shadow duration-200 ${!message.read ? 'border-[#3E92CC] bg-blue-50/50' : ''}`}>
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start space-x-4 flex-1">
-                        <Avatar className="h-10 w-10">
-                          <AvatarFallback>{message.from.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-2">
-                            <h3 className={`font-semibold ${!message.read ? 'text-[#0D1B2A] dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}>
-                              {message.from}
-                            </h3>
-                            <Badge className={getPriorityColor(message.priority)}>
-                              {message.priority}
-                            </Badge>
-                            {!message.read && (
-                              <Badge className="bg-[#3E92CC] text-white">
-                                New
-                              </Badge>
-                            )}
-                          </div>
-                          
-                          <h4 className={`font-medium mb-2 ${!message.read ? 'text-[#0D1B2A] dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}>
-                            {message.subject}
-                          </h4>
-                          
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                            {message.content}
-                          </p>
-                          
-                          <div className="flex items-center space-x-4 text-xs text-gray-500">
-                            <div className="flex items-center space-x-1">
-                              <Clock className="h-3 w-3" />
-                              <span>{message.timestamp}</span>
-                            </div>
-                            {message.attachments && message.attachments.length > 0 && (
-                              <div className="flex items-center space-x-1">
-                                <Paperclip className="h-3 w-3" />
-                                <span>{message.attachments.length} attachment(s)</span>
+              {filteredMessages.length === 0 ? (
+                <p className="text-gray-500 py-8 text-center">No messages</p>
+              ) : (
+                filteredMessages.map((msg) => {
+                  const fromName = msg.sender
+                    ? `${(msg.sender as { firstName?: string }).firstName} ${(msg.sender as { lastName?: string }).lastName}`
+                    : 'Unknown';
+                  return (
+                    <Card
+                      key={msg.id}
+                      className={`hover:shadow-lg transition-shadow duration-200 ${!msg.isRead ? 'border-[#3E92CC] bg-blue-50/50 dark:bg-blue-900/10' : ''}`}
+                    >
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start space-x-4 flex-1">
+                            <Avatar className="h-10 w-10">
+                              <AvatarFallback>{fromName.slice(0, 2).toUpperCase()}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-3 mb-2">
+                                <h3 className="font-semibold text-[#0D1B2A] dark:text-white">{fromName}</h3>
+                                <Badge className={getPriorityColor(msg.priority)}>{msg.priority}</Badge>
+                                {!msg.isRead && <Badge className="bg-[#3E92CC] text-white">New</Badge>}
                               </div>
-                            )}
+                              <h4 className="font-medium mb-2">{msg.subject}</h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">{msg.content}</p>
+                              <div className="flex items-center space-x-4 text-xs text-gray-500">
+                                <div className="flex items-center space-x-1">
+                                  <Clock className="h-3 w-3" />
+                                  <span>{msg.createdAt?.slice(0, 16)}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex space-x-2 ml-4">
+                            <Button size="sm" variant="outline">
+                              <Reply className="h-4 w-4" />
+                            </Button>
+                            <Button size="sm" variant="outline">
+                              <Forward className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
-                      </div>
-                      
-                      <div className="flex space-x-2 ml-4">
-                        <Button size="sm" variant="outline">
-                          <Reply className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Forward className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Star className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              )}
             </div>
           </div>
         </TabsContent>
 
         <TabsContent value="teachers" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockTeachers.map((teacher) => (
-              <Card key={teacher.id} className="hover:shadow-lg transition-shadow duration-200">
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-4 mb-4">
-                    <Avatar className="h-16 w-16">
-                      <AvatarImage src={teacher.avatar} alt={teacher.name} />
-                      <AvatarFallback className="text-lg">
-                        {teacher.name.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-[#0D1B2A] dark:text-white">{teacher.name}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{teacher.subject}</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 mb-4">
-                    <div className="flex items-center space-x-2 text-sm">
-                      <Mail className="h-4 w-4 text-gray-400" />
-                      <span>{teacher.email}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm">
-                      <Phone className="h-4 w-4 text-gray-400" />
-                      <span>{teacher.phone}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm">
-                      <Clock className="h-4 w-4 text-gray-400" />
-                      <span>Office Hours: {teacher.officeHours}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm">
-                      <Calendar className="h-4 w-4 text-gray-400" />
-                      <span>Next Available: {teacher.nextAvailable}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex space-x-2">
-                    <Button size="sm" className="flex-1 bg-[#3E92CC] hover:bg-[#2E82BC] text-white">
-                      <MessageSquare className="mr-2 h-4 w-4" />
-                      Message
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <Calendar className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <Phone className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            {teachers.length === 0 ? (
+              <p className="text-gray-500 py-8 col-span-full text-center">No teachers found</p>
+            ) : (
+              teachers.map((teacher) => {
+                const name = teacher.user
+                  ? `${(teacher.user as { firstName?: string }).firstName} ${(teacher.user as { lastName?: string }).lastName}`
+                  : 'Teacher';
+                const email = (teacher.user as { email?: string })?.email ?? '';
+                const phone = (teacher.user as { phone?: string })?.phone ?? '-';
+                return (
+                  <Card key={teacher.id} className="hover:shadow-lg transition-shadow duration-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-center space-x-4 mb-4">
+                        <Avatar className="h-16 w-16">
+                          <AvatarImage src={(teacher.user as { avatar?: string })?.avatar} alt={name} />
+                          <AvatarFallback className="text-lg">{name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-[#0D1B2A] dark:text-white">{name}</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{teacher.specialization || teacher.subjects?.[0] || 'Teacher'}</p>
+                        </div>
+                      </div>
+                      <div className="space-y-3 mb-4">
+                        <div className="flex items-center space-x-2 text-sm">
+                          <Mail className="h-4 w-4 text-gray-400" />
+                          <span>{email}</span>
+                        </div>
+                        <div className="flex items-center space-x-2 text-sm">
+                          <Phone className="h-4 w-4 text-gray-400" />
+                          <span>{phone}</span>
+                        </div>
+                      </div>
+                      <Button size="sm" className="w-full bg-[#3E92CC] hover:bg-[#2E82BC] text-white">
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        Message
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
           </div>
         </TabsContent>
 
         <TabsContent value="meetings" className="mt-6">
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Meeting Schedule</h2>
-              <Button className="bg-[#0D1B2A] hover:bg-[#1B2B3A] text-white">
-                <Plus className="mr-2 h-4 w-4" />
-                Request Meeting
-              </Button>
-            </div>
-
+            <h2 className="text-xl font-semibold">Meeting Schedule</h2>
             <div className="space-y-4">
-              {mockMeetings.map((meeting) => (
-                <Card key={meeting.id}>
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start space-x-4">
-                        <div className="flex items-center justify-center w-12 h-12 bg-[#3E92CC]/10 rounded-lg">
-                          {getTypeIcon(meeting.type)}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3 mb-2">
-                            <h3 className="font-semibold text-[#0D1B2A] dark:text-white">
-                              {meeting.title}
-                            </h3>
-                            <Badge className={getStatusColor(meeting.status)}>
-                              {meeting.status}
-                            </Badge>
+              {events.length === 0 ? (
+                <p className="text-gray-500 py-8 text-center">No meetings scheduled</p>
+              ) : (
+                events.map((event) => {
+                  const organizerName = event.organizer
+                    ? `${(event.organizer as { firstName?: string }).firstName} ${(event.organizer as { lastName?: string }).lastName}`
+                    : 'TBD';
+                  const startDate = new Date(event.startDate);
+                  const endDate = new Date(event.endDate);
+                  const status = event.status || 'scheduled';
+                  return (
+                    <Card key={event.id}>
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start space-x-4">
+                            <div className="flex items-center justify-center w-12 h-12 bg-[#3E92CC]/10 rounded-lg">
+                              <Calendar className="h-6 w-6 text-[#3E92CC]" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-3 mb-2">
+                                <h3 className="font-semibold text-[#0D1B2A] dark:text-white">{event.title}</h3>
+                                <Badge className={getStatusColor(status)}>{status}</Badge>
+                              </div>
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
+                                <div className="flex items-center space-x-2 text-sm">
+                                  <User className="h-4 w-4 text-gray-400" />
+                                  <span>{organizerName}</span>
+                                </div>
+                                <div className="flex items-center space-x-2 text-sm">
+                                  <Calendar className="h-4 w-4 text-gray-400" />
+                                  <span>{startDate.toLocaleDateString()}</span>
+                                </div>
+                                <div className="flex items-center space-x-2 text-sm">
+                                  <Clock className="h-4 w-4 text-gray-400" />
+                                  <span>{startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                </div>
+                                {event.location && (
+                                  <div className="flex items-center space-x-2 text-sm">
+                                    <BookOpen className="h-4 w-4 text-gray-400" />
+                                    <span>{event.location}</span>
+                                  </div>
+                                )}
+                              </div>
+                              {event.description && (
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{event.description}</p>
+                              )}
+                            </div>
                           </div>
-                          
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
-                            <div className="flex items-center space-x-2 text-sm">
-                              <User className="h-4 w-4 text-gray-400" />
-                              <span>{meeting.teacher}</span>
-                            </div>
-                            <div className="flex items-center space-x-2 text-sm">
-                              <BookOpen className="h-4 w-4 text-gray-400" />
-                              <span>{meeting.subject}</span>
-                            </div>
-                            <div className="flex items-center space-x-2 text-sm">
-                              <Calendar className="h-4 w-4 text-gray-400" />
-                              <span>{meeting.date}</span>
-                            </div>
-                            <div className="flex items-center space-x-2 text-sm">
-                              <Clock className="h-4 w-4 text-gray-400" />
-                              <span>{meeting.time} ({meeting.duration}min)</span>
-                            </div>
-                          </div>
-                          
-                          {meeting.notes && (
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                              <strong>Notes:</strong> {meeting.notes}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="flex space-x-2">
-                        {meeting.status === 'scheduled' && (
-                          <>
-                            <Button size="sm" variant="outline">
-                              Reschedule
-                            </Button>
+                          {status === 'scheduled' && (
                             <Button size="sm" className="bg-[#3E92CC] hover:bg-[#2E82BC] text-white">
                               Join Meeting
                             </Button>
-                          </>
-                        )}
-                        {meeting.status === 'requested' && (
-                          <Button size="sm" variant="outline">
-                            Pending Approval
-                          </Button>
-                        )}
-                        {meeting.status === 'completed' && (
-                          <Button size="sm" variant="outline">
-                            View Summary
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              )}
             </div>
           </div>
         </TabsContent>
@@ -467,38 +353,41 @@ export function ParentCommunicationPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="child">Child</Label>
-                    <Select value={selectedChild} onValueChange={setSelectedChild}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select child" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="emma">Emma Johnson - 10-A</SelectItem>
-                        <SelectItem value="james">James Johnson - 8-B</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
+                  {children.length > 0 && (
+                    <div className="space-y-2">
+                      <Label htmlFor="child">Child</Label>
+                      <Select value={selectedChild} onValueChange={setSelectedChild}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select child" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {children.map((child) => (
+                            <SelectItem key={child.id} value={String(child.id)}>
+                              {child.user ? `${(child.user as { firstName?: string }).firstName} ${(child.user as { lastName?: string }).lastName}` : `Student ${child.id}`} - {child.className}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="teacher">To (Teacher)</Label>
-                    <Select value={newMessage.to} onValueChange={(value) => setNewMessage({...newMessage, to: value})}>
+                    <Select value={newMessage.to} onValueChange={(v) => setNewMessage({ ...newMessage, to: v })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select teacher" />
                       </SelectTrigger>
                       <SelectContent>
-                        {mockTeachers.map((teacher) => (
-                          <SelectItem key={teacher.id} value={teacher.id}>
-                            {teacher.name} - {teacher.subject}
+                        {teachers.map((t) => (
+                          <SelectItem key={t.id} value={String(t.userId)}>
+                            {t.user ? `${(t.user as { firstName?: string }).firstName} ${(t.user as { lastName?: string }).lastName}` : `Teacher ${t.id}`} - {t.specialization || t.subjects?.[0] || ''}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="priority">Priority</Label>
-                    <Select value={newMessage.priority} onValueChange={(value) => setNewMessage({...newMessage, priority: value})}>
+                    <Select value={newMessage.priority} onValueChange={(v) => setNewMessage({ ...newMessage, priority: v as 'low' | 'medium' | 'high' })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select priority" />
                       </SelectTrigger>
@@ -509,49 +398,35 @@ export function ParentCommunicationPage() {
                       </SelectContent>
                     </Select>
                   </div>
-
-                  <div className="space-y-2">
+                  <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="subject">Subject</Label>
-                    <Input 
+                    <Input
                       id="subject"
                       placeholder="Message subject"
                       value={newMessage.subject}
-                      onChange={(e) => setNewMessage({...newMessage, subject: e.target.value})}
+                      onChange={(e) => setNewMessage({ ...newMessage, subject: e.target.value })}
                     />
                   </div>
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="content">Message</Label>
-                  <Textarea 
+                  <Textarea
                     id="content"
                     placeholder="Type your message here..."
                     rows={8}
                     value={newMessage.content}
-                    onChange={(e) => setNewMessage({...newMessage, content: e.target.value})}
+                    onChange={(e) => setNewMessage({ ...newMessage, content: e.target.value })}
                   />
                 </div>
-
-                <div className="flex items-center space-x-4">
-                  <Button variant="outline">
-                    <Paperclip className="mr-2 h-4 w-4" />
-                    Attach File
-                  </Button>
-                  <Button variant="outline">
-                    <Bell className="mr-2 h-4 w-4" />
-                    Request Read Receipt
-                  </Button>
-                </div>
-
                 <Separator />
-
                 <div className="flex justify-end space-x-4">
-                  <Button variant="outline">
-                    Save Draft
-                  </Button>
-                  <Button className="bg-[#0D1B2A] hover:bg-[#1B2B3A] text-white">
-                    <Send className="mr-2 h-4 w-4" />
-                    Send Message
+                  <Button
+                    className="bg-[#0D1B2A] hover:bg-[#1B2B3A] text-white"
+                    onClick={handleSendMessage}
+                    disabled={isSending || !newMessage.to || !newMessage.subject || !newMessage.content}
+                  >
+                    {isSending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                    {isSending ? 'Sending...' : 'Send Message'}
                   </Button>
                 </div>
               </CardContent>

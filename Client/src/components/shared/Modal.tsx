@@ -44,7 +44,11 @@ export function Modal({
       <DialogContent className={cn(sizeClasses[size], className)}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          {description && <DialogDescription>{description}</DialogDescription>}
+          {description ? (
+            <DialogDescription>{description}</DialogDescription>
+          ) : (
+            <DialogDescription className="sr-only">Form dialog for {title}</DialogDescription>
+          )}
         </DialogHeader>
         <div className="py-4">{children}</div>
         {footer && <DialogFooter>{footer}</DialogFooter>}

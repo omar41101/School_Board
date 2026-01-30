@@ -26,8 +26,8 @@ let AssignmentsController = class AssignmentsController {
     constructor(assignmentsService) {
         this.assignmentsService = assignmentsService;
     }
-    findAll() {
-        return this.assignmentsService.findAll();
+    findAll(query) {
+        return this.assignmentsService.findAll(query);
     }
     findOne(id) {
         return this.assignmentsService.findOne(id);
@@ -46,8 +46,9 @@ exports.AssignmentsController = AssignmentsController;
 __decorate([
     (0, common_1.Get)(),
     (0, swagger_1.ApiOperation)({ summary: 'Get all assignments' }),
+    __param(0, (0, common_1.Query)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], AssignmentsController.prototype, "findAll", null);
 __decorate([

@@ -33,20 +33,20 @@ export function LoginPage() {
     try {
       const response = await login(formData).unwrap() as AuthResponse;
       
-      if (response.success && response.token) {
-        // Transform user data if needed (handle _id vs id)
+      if (response.success && (response.token || response.accessToken)) {
+        const accessToken = response.accessToken ?? response.token;
         const userData = {
           ...response.data,
-          id: response.data.id || (response.data as unknown as { _id: string })._id || (response.data as unknown as { id: number }).id,
+          id: response.data.id ?? (response.data as unknown as { _id?: string })._id ?? (response.data as unknown as { id?: number }).id,
         };
         
-        // Update Redux state
         dispatch(setCredentials({
           user: userData as User,
-          token: response.token,
+          token: accessToken,
+          refreshToken: response.refreshToken,
         }));
 
-        toast.success('Login successful!');
+        toast.success('Login successful! You stay logged in for 7 days.');
         navigate(from, { replace: true });
       }
     } catch (err) {
@@ -119,16 +119,7 @@ export function LoginPage() {
           </form>
 
           <div className="mt-4 text-center text-sm text-muted-foreground">
-            <p>Demo credentials:</p>
-            <p className="mt-1">
-              <span className="font-medium">Admin:</span> admin@school.com / admin123
-            </p>
-            <p>
-              <span className="font-medium">Teacher:</span> teacher1@school.com / teacher123
-            </p>
-            <p>
-              <span className="font-medium">Student:</span> student1@school.com / student123
-            </p>
+            <p>Use your school account. After seeding the database, try admin@school.com / admin123</p>
           </div>
         </CardContent>
       </Card>

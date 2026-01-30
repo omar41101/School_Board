@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
@@ -27,8 +28,8 @@ export class AssignmentsController {
 
   @Get()
   @ApiOperation({ summary: 'Get all assignments' })
-  findAll() {
-    return this.assignmentsService.findAll();
+  findAll(@Query() query: any) {
+    return this.assignmentsService.findAll(query);
   }
 
   @Get(':id')

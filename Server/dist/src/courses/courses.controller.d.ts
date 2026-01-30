@@ -8,6 +8,9 @@ export declare class CoursesController {
     findAll(query: any): Promise<{
         status: string;
         results: number;
+        total: number;
+        totalPages: number;
+        currentPage: number;
         data: {
             courses: ({
                 teacher: {
@@ -29,8 +32,9 @@ export declare class CoursesController {
                     classes: import("@prisma/client/runtime/library").JsonValue | null;
                     schedule: import("@prisma/client/runtime/library").JsonValue | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -38,7 +42,6 @@ export declare class CoursesController {
                     addressZipCode: string | null;
                     addressCountry: string | null;
                     status: import(".prisma/client").$Enums.TeacherStatus;
-                    userId: number;
                     joiningDate: Date;
                 };
             } & {
@@ -46,8 +49,8 @@ export declare class CoursesController {
                 description: string | null;
                 level: string;
                 schedule: import("@prisma/client/runtime/library").JsonValue | null;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: string;
                 code: string;
@@ -74,11 +77,11 @@ export declare class CoursesController {
                         email: string;
                         password: string;
                         role: import(".prisma/client").$Enums.Role;
+                        createdAt: Date;
                         id: number;
                         avatar: string | null;
                         isActive: boolean;
                         lastLogin: Date | null;
-                        createdAt: Date;
                         updatedAt: Date;
                     };
                 } & {
@@ -93,8 +96,9 @@ export declare class CoursesController {
                     classes: import("@prisma/client/runtime/library").JsonValue | null;
                     schedule: import("@prisma/client/runtime/library").JsonValue | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -102,7 +106,6 @@ export declare class CoursesController {
                     addressZipCode: string | null;
                     addressCountry: string | null;
                     status: import(".prisma/client").$Enums.TeacherStatus;
-                    userId: number;
                     joiningDate: Date;
                 };
             } & {
@@ -110,8 +113,8 @@ export declare class CoursesController {
                 description: string | null;
                 level: string;
                 schedule: import("@prisma/client/runtime/library").JsonValue | null;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: string;
                 code: string;
@@ -134,8 +137,8 @@ export declare class CoursesController {
                 description: string | null;
                 level: string;
                 schedule: import("@prisma/client/runtime/library").JsonValue | null;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: string;
                 code: string;
@@ -158,8 +161,8 @@ export declare class CoursesController {
                 description: string | null;
                 level: string;
                 schedule: import("@prisma/client/runtime/library").JsonValue | null;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: string;
                 code: string;
@@ -186,8 +189,8 @@ export declare class CoursesController {
                 description: string | null;
                 level: string;
                 schedule: import("@prisma/client/runtime/library").JsonValue | null;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: string;
                 code: string;

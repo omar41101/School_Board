@@ -1,5 +1,10 @@
-// API Configuration
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000/api';
+// API Configuration - match backend /api/v0
+function getApiBase(): string {
+  const raw = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000/api';
+  const t = raw.replace(/\/+$/, '');
+  return t.endsWith('/api') ? t + '/v0' : t.endsWith('/v0') ? t : t + '/v0';
+}
+const API_BASE_URL = getApiBase();
 
 // Helper function to normalize API responses that might have nested data
 export function normalizeArrayResponse<T>(response: any): T[] {
@@ -141,6 +146,13 @@ export const authApi = {
   logout: () => apiClient.post('/auth/logout'),
 
   getCurrentUser: () => apiClient.get('/auth/me'),
+
+  refresh: (refreshToken: string) =>
+    fetch(`${API_BASE_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    }).then((r) => r.json()),
 
   updatePassword: (currentPassword: string, newPassword: string) =>
     apiClient.put('/auth/update-password', { currentPassword, newPassword }),

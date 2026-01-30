@@ -27,8 +27,8 @@ let ParentsController = class ParentsController {
     constructor(parentsService) {
         this.parentsService = parentsService;
     }
-    findAll() {
-        return this.parentsService.findAll();
+    findAll(query) {
+        return this.parentsService.findAll(query);
     }
     getMe(userId) {
         return this.parentsService.findByUserId(userId);
@@ -50,8 +50,9 @@ exports.ParentsController = ParentsController;
 __decorate([
     (0, common_1.Get)(),
     (0, swagger_1.ApiOperation)({ summary: 'Get all parents' }),
+    __param(0, (0, common_1.Query)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], ParentsController.prototype, "findAll", null);
 __decorate([

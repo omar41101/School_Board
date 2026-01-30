@@ -27,8 +27,8 @@ let TeachersController = class TeachersController {
     constructor(teachersService) {
         this.teachersService = teachersService;
     }
-    findAll() {
-        return this.teachersService.findAll();
+    findAll(query) {
+        return this.teachersService.findAll(query);
     }
     getMe(userId) {
         return this.teachersService.findByUserId(userId);
@@ -50,8 +50,9 @@ exports.TeachersController = TeachersController;
 __decorate([
     (0, common_1.Get)(),
     (0, swagger_1.ApiOperation)({ summary: 'Get all teachers' }),
+    __param(0, (0, common_1.Query)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], TeachersController.prototype, "findAll", null);
 __decorate([

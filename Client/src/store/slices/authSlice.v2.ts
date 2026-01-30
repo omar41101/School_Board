@@ -37,8 +37,11 @@ export const initializeAuth = createAsyncThunk<User | null, void>(
   async (_, { rejectWithValue }) => {
     try {
       const user = await authService.initialize();
-      return user;
+      if (user) return user;
+      if (authService.getToken() && authService.getStoredUser()) return authService.getStoredUser() as User;
+      return null;
     } catch (error: any) {
+      if (authService.getToken() && authService.getStoredUser()) return authService.getStoredUser() as User;
       return rejectWithValue(error.message || 'Failed to initialize authentication');
     }
   }
@@ -123,15 +126,16 @@ const authSlice = createSlice({
     },
 
     /**
-     * Set credentials (for RTK Query integration)
+     * Set credentials (for RTK Query integration). Use refreshToken to keep session 7 days.
      */
-    setCredentials: (state, action: PayloadAction<{ user: User | AuthServiceUser; token: string }>) => {
+    setCredentials: (state, action: PayloadAction<{ user: User | AuthServiceUser; token: string; refreshToken?: string }>) => {
       state.user = action.payload.user;
       state.token = action.payload.token;
       state.isAuthenticated = true;
       state.loading = false;
       state.error = null;
       authService.setToken(action.payload.token);
+      if (action.payload.refreshToken) authService.setRefreshToken(action.payload.refreshToken);
     },
   },
   extraReducers: (builder) => {

@@ -8,11 +8,12 @@ export class GradesService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(query: any) {
-    const { student, course, academicYear, semester } = query;
+    const { student, course, teacher, academicYear, semester } = query;
     const where: any = {};
-    
+
     if (student) where.studentId = parseInt(student);
     if (course) where.courseId = parseInt(course);
+    if (teacher) where.teacherId = parseInt(teacher);
     if (academicYear) where.academicYear = academicYear;
     if (semester) where.semester = semester;
 
@@ -156,13 +157,22 @@ export class GradesService {
     };
   }
 
-  async remove(id: number) {
+  async remove(id: number, userId?: number) {
     const grade = await this.prisma.grade.findUnique({
       where: { id },
     });
 
     if (!grade) {
       throw new NotFoundException('Grade not found');
+    }
+
+    if (userId) {
+      const teacher = await this.prisma.teacher.findFirst({
+        where: { userId },
+      });
+      if (teacher && grade.teacherId !== teacher.id) {
+        throw new NotFoundException('Grade not found or access denied');
+      }
     }
 
     await this.prisma.grade.delete({

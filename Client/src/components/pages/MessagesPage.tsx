@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useCreateMessageMutation, useGetMessagesInfiniteQuery } from '../../services/api';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -29,7 +30,7 @@ export function MessagesPage() {
   const [isComposeOpen, setIsComposeOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(1);
-  const limit = 20;
+  const limit = 10;
 
   const [createMessage, { isLoading: isSending }] = useCreateMessageMutation();
   const [compose, setCompose] = useState<{ recipientId: string; subject: string; content: string }>({
@@ -260,13 +261,18 @@ export function MessagesPage() {
             <Button
               disabled={isSending || !compose.recipientId || !compose.subject || !compose.content}
               onClick={async () => {
-                await createMessage({
-                  recipientId: Number(compose.recipientId),
-                  subject: compose.subject,
-                  content: compose.content,
-                }).unwrap();
-                setCompose({ recipientId: '', subject: '', content: '' });
-                setIsComposeOpen(false);
+                try {
+                  await createMessage({
+                    recipientId: Number(compose.recipientId),
+                    subject: compose.subject,
+                    content: compose.content,
+                  }).unwrap();
+                  toast.success('Message sent successfully');
+                  setCompose({ recipientId: '', subject: '', content: '' });
+                  setIsComposeOpen(false);
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : 'Failed to send message');
+                }
               }}
             >
               {isSending ? 'Sending...' : 'Send'}

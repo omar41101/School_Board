@@ -27,8 +27,9 @@ export declare class PaymentsController {
                     section: string | null;
                     parentId: number | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -42,12 +43,11 @@ export declare class PaymentsController {
                     emergencyContactPhone: string | null;
                     previousSchoolName: string | null;
                     previousSchoolYear: string | null;
-                    userId: number;
                 };
             } & {
                 type: import(".prisma/client").$Enums.PaymentType;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.PaymentStatus;
                 academicYear: string;
@@ -81,8 +81,9 @@ export declare class PaymentsController {
                     section: string | null;
                     parentId: number | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -96,12 +97,11 @@ export declare class PaymentsController {
                     emergencyContactPhone: string | null;
                     previousSchoolName: string | null;
                     previousSchoolYear: string | null;
-                    userId: number;
                 };
             } & {
                 type: import(".prisma/client").$Enums.PaymentType;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.PaymentStatus;
                 academicYear: string;
@@ -135,8 +135,9 @@ export declare class PaymentsController {
                     section: string | null;
                     parentId: number | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -150,12 +151,11 @@ export declare class PaymentsController {
                     emergencyContactPhone: string | null;
                     previousSchoolName: string | null;
                     previousSchoolYear: string | null;
-                    userId: number;
                 };
             } & {
                 type: import(".prisma/client").$Enums.PaymentType;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.PaymentStatus;
                 academicYear: string;
@@ -189,8 +189,9 @@ export declare class PaymentsController {
                     section: string | null;
                     parentId: number | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -204,12 +205,11 @@ export declare class PaymentsController {
                     emergencyContactPhone: string | null;
                     previousSchoolName: string | null;
                     previousSchoolYear: string | null;
-                    userId: number;
                 };
             } & {
                 type: import(".prisma/client").$Enums.PaymentType;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.PaymentStatus;
                 academicYear: string;
@@ -243,8 +243,9 @@ export declare class PaymentsController {
                     section: string | null;
                     parentId: number | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -258,12 +259,11 @@ export declare class PaymentsController {
                     emergencyContactPhone: string | null;
                     previousSchoolName: string | null;
                     previousSchoolYear: string | null;
-                    userId: number;
                 };
             } & {
                 type: import(".prisma/client").$Enums.PaymentType;
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.PaymentStatus;
                 academicYear: string;

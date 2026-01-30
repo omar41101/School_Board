@@ -28,6 +28,8 @@ function normalizeApiBaseUrl(raw: string): string {
 
 const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v0');
 
+const REFRESH_TOKEN_KEY = 'refreshToken';
+
 const baseQuery = fetchBaseQuery({
   baseUrl: API_BASE_URL,
   prepareHeaders: (headers) => {
@@ -40,9 +42,31 @@ const baseQuery = fetchBaseQuery({
   },
 });
 
+async function baseQueryWithReauth(args: Parameters<typeof baseQuery>[0], api: Parameters<Parameters<typeof baseQuery>[1]>[1], extraOptions: Parameters<typeof baseQuery>[2]) {
+  let result = await baseQuery(args, api, extraOptions);
+  if (result.error?.status === 401) {
+    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+    if (refreshToken) {
+      const refreshResult = await baseQuery(
+        { url: '/auth/refresh', method: 'POST', body: { refreshToken } },
+        api,
+        extraOptions
+      );
+      if (refreshResult.data) {
+        const data = refreshResult.data as { token?: string; accessToken?: string; refreshToken?: string };
+        const newAccess = data.accessToken ?? data.token;
+        if (newAccess) localStorage.setItem('token', newAccess);
+        if (data.refreshToken) localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+        result = await baseQuery(args, api, extraOptions);
+      }
+    }
+  }
+  return result;
+}
+
 export const api = createApi({
   reducerPath: 'api',
-  baseQuery,
+  baseQuery: baseQueryWithReauth,
   tagTypes: [
     'User',
     'Student',
@@ -78,6 +102,31 @@ export const api = createApi({
     getMe: builder.query<ApiResponse<User>, void>({
       query: () => '/auth/me',
       providesTags: ['User'],
+    }),
+    getCurrent: builder.query<ApiResponse<User>, void>({
+      query: () => '/auth/me',
+      providesTags: ['User'],
+    }),
+    refreshToken: builder.mutation<AuthResponse, { refreshToken: string }>({
+      query: (body) => ({
+        url: '/auth/refresh',
+        method: 'POST',
+        body,
+      }),
+    }),
+
+    // Profile /me endpoints for role-specific data
+    getStudentMe: builder.query<ApiResponse<{ student: Student }>, void>({
+      query: () => '/students/me',
+      providesTags: ['Student'],
+    }),
+    getTeacherMe: builder.query<ApiResponse<{ teacher: Teacher }>, void>({
+      query: () => '/teachers/me',
+      providesTags: ['Teacher'],
+    }),
+    getParentMe: builder.query<ApiResponse<{ parent: Parent }>, void>({
+      query: () => '/parents/me',
+      providesTags: ['Parent'],
     }),
     updatePassword: builder.mutation<{ status: string; token: string; message: string }, { currentPassword: string; newPassword: string }>({
       query: (data) => ({
@@ -159,8 +208,11 @@ export const api = createApi({
     }),
 
     // Teachers
-    getTeachers: builder.query<ApiResponse<{ teachers: Teacher[] }>, void>({
-      query: () => '/teachers',
+    getTeachers: builder.query<PaginatedResponse<Teacher>, PaginationParams & FilterParams>({
+      query: (params) => ({
+        url: '/teachers',
+        params: { ...params, limit: params.limit ?? 10 },
+      }),
       providesTags: ['Teacher'],
     }),
     getTeacherById: builder.query<ApiResponse<{ teacher: Teacher }>, number>({
@@ -192,8 +244,11 @@ export const api = createApi({
     }),
 
     // Parents
-    getParents: builder.query<ApiResponse<{ parents: Parent[] }>, void>({
-      query: () => '/parents',
+    getParents: builder.query<PaginatedResponse<Parent>, PaginationParams & FilterParams>({
+      query: (params) => ({
+        url: '/parents',
+        params: { ...params, limit: params.limit ?? 10 },
+      }),
       providesTags: ['Parent'],
     }),
     getParentById: builder.query<ApiResponse<{ parent: Parent }>, number>({
@@ -225,10 +280,13 @@ export const api = createApi({
     }),
 
     // Courses
-    getCourses: builder.query<ApiResponse<{ courses: Course[] }>, FilterParams>({
+    getCourses: builder.query<
+      ApiResponse<{ courses: Course[] }> & { total?: number; totalPages?: number; currentPage?: number },
+      FilterParams & PaginationParams & { student?: number; teacher?: number }
+    >({
       query: (params) => ({
         url: '/courses',
-        params,
+        params: { ...params, limit: params.limit ?? 10 },
       }),
       providesTags: ['Course'],
     }),
@@ -301,8 +359,11 @@ export const api = createApi({
     }),
 
     // Assignments
-    getAssignments: builder.query<ApiResponse<{ assignments: Assignment[] }>, void>({
-      query: () => '/assignments',
+    getAssignments: builder.query<ApiResponse<{ assignments: Assignment[] }>, FilterParams & { course?: number; courseIds?: string }>({
+      query: (params) => ({
+        url: '/assignments',
+        params: params?.course ? { course: String(params.course) } : params?.courseIds ? { courseIds: params.courseIds } : {},
+      }),
       providesTags: ['Assignment'],
     }),
     createAssignment: builder.mutation<ApiResponse<{ assignment: Assignment }>, Record<string, unknown>>({
@@ -362,7 +423,10 @@ export const api = createApi({
     }),
 
     // Payments
-    getPayments: builder.query<ApiResponse<{ payments: Payment[] }>, FilterParams>({
+    getPayments: builder.query<
+      ApiResponse<{ payments: Payment[] }>,
+      FilterParams & { student?: number; parent?: number }
+    >({
       query: (params) => ({
         url: '/payments',
         params,
@@ -394,10 +458,13 @@ export const api = createApi({
     }),
 
     // Events
-    getEvents: builder.query<ApiResponse<{ events: Event[] }>, FilterParams>({
+    getEvents: builder.query<ApiResponse<{ events: Event[] }>, FilterParams & { organizerId?: number }>({
       query: (params) => ({
         url: '/events',
-        params,
+        params: {
+          ...params,
+          ...(params.organizerId && { organizerId: String(params.organizerId) }),
+        },
       }),
       providesTags: ['Event'],
     }),
@@ -449,7 +516,7 @@ export const api = createApi({
           ...(params.inbox !== undefined && { inbox: String(params.inbox) }),
           ...(params.sent !== undefined && { sent: String(params.sent) }),
           page: String(params.page ?? 1),
-          limit: String(params.limit ?? 20),
+          limit: String(params.limit ?? 10),
         },
       }),
       serializeQueryArgs: ({ endpointName, queryArgs }) =>
@@ -527,6 +594,11 @@ export const {
   useLoginMutation,
   useRegisterMutation,
   useGetMeQuery,
+  useGetCurrentQuery,
+  useRefreshTokenMutation,
+  useGetStudentMeQuery,
+  useGetTeacherMeQuery,
+  useGetParentMeQuery,
   useUpdatePasswordMutation,
   useGetUsersQuery,
   useGetUserByIdQuery,

@@ -27,8 +27,9 @@ export declare class AttendanceService {
                     section: string | null;
                     parentId: number | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -42,7 +43,6 @@ export declare class AttendanceService {
                     emergencyContactPhone: string | null;
                     previousSchoolName: string | null;
                     previousSchoolYear: string | null;
-                    userId: number;
                 };
                 teacher: {
                     dateOfBirth: Date;
@@ -56,8 +56,9 @@ export declare class AttendanceService {
                     classes: import("@prisma/client/runtime/library").JsonValue | null;
                     schedule: import("@prisma/client/runtime/library").JsonValue | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -65,7 +66,6 @@ export declare class AttendanceService {
                     addressZipCode: string | null;
                     addressCountry: string | null;
                     status: import(".prisma/client").$Enums.TeacherStatus;
-                    userId: number;
                     joiningDate: Date;
                 };
                 course: {
@@ -74,8 +74,8 @@ export declare class AttendanceService {
                     code: string;
                 };
             } & {
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.AttendanceStatus;
                 subject: string | null;
@@ -105,8 +105,9 @@ export declare class AttendanceService {
                     section: string | null;
                     parentId: number | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -120,7 +121,6 @@ export declare class AttendanceService {
                     emergencyContactPhone: string | null;
                     previousSchoolName: string | null;
                     previousSchoolYear: string | null;
-                    userId: number;
                 };
                 teacher: {
                     dateOfBirth: Date;
@@ -134,8 +134,9 @@ export declare class AttendanceService {
                     classes: import("@prisma/client/runtime/library").JsonValue | null;
                     schedule: import("@prisma/client/runtime/library").JsonValue | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -143,7 +144,6 @@ export declare class AttendanceService {
                     addressZipCode: string | null;
                     addressCountry: string | null;
                     status: import(".prisma/client").$Enums.TeacherStatus;
-                    userId: number;
                     joiningDate: Date;
                 };
                 course: {
@@ -151,8 +151,8 @@ export declare class AttendanceService {
                     description: string | null;
                     level: string;
                     schedule: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
                     updatedAt: Date;
                     status: string;
                     code: string;
@@ -166,8 +166,8 @@ export declare class AttendanceService {
                     semester: import(".prisma/client").$Enums.Semester;
                 };
             } & {
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.AttendanceStatus;
                 subject: string | null;
@@ -197,8 +197,9 @@ export declare class AttendanceService {
                     section: string | null;
                     parentId: number | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -212,7 +213,6 @@ export declare class AttendanceService {
                     emergencyContactPhone: string | null;
                     previousSchoolName: string | null;
                     previousSchoolYear: string | null;
-                    userId: number;
                 };
                 teacher: {
                     dateOfBirth: Date;
@@ -226,8 +226,9 @@ export declare class AttendanceService {
                     classes: import("@prisma/client/runtime/library").JsonValue | null;
                     schedule: import("@prisma/client/runtime/library").JsonValue | null;
                     documents: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
+                    userId: number;
                     updatedAt: Date;
                     addressStreet: string | null;
                     addressCity: string | null;
@@ -235,7 +236,6 @@ export declare class AttendanceService {
                     addressZipCode: string | null;
                     addressCountry: string | null;
                     status: import(".prisma/client").$Enums.TeacherStatus;
-                    userId: number;
                     joiningDate: Date;
                 };
                 course: {
@@ -243,8 +243,8 @@ export declare class AttendanceService {
                     description: string | null;
                     level: string;
                     schedule: import("@prisma/client/runtime/library").JsonValue | null;
-                    id: number;
                     createdAt: Date;
+                    id: number;
                     updatedAt: Date;
                     status: string;
                     code: string;
@@ -258,8 +258,8 @@ export declare class AttendanceService {
                     semester: import(".prisma/client").$Enums.Semester;
                 };
             } & {
-                id: number;
                 createdAt: Date;
+                id: number;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.AttendanceStatus;
                 subject: string | null;

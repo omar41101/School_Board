@@ -1,20 +1,26 @@
-import { useState } from 'react';
-import { useCreateStudentMutation, useDeleteStudentMutation, useGetStudentsQuery, useGetUsersQuery, useUpdateStudentMutation } from '../../services/api';
+import React, { useState } from 'react';
+import { toast } from 'sonner';
+import { useCreateStudentMutation, useDeleteStudentMutation, useGetStudentsQuery, useUpdateStudentMutation } from '../../services/api';
+import { useDebouncedSearch } from '../../hooks/useDebounce';
 import { DataTable, type Column } from '../shared/DataTable';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Modal } from '../shared/Modal';
+import { FormModal } from '../shared/FormModal';
+import { ConfirmDeleteDialog } from '../shared/ConfirmDeleteDialog';
+import { PaginatedSelect } from '../shared/PaginatedSelect';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import { Badge } from '../ui/badge';
-import type { Student, User } from '../../types';
+import type { Student } from '../../types';
 
 export function StudentsManagement() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
 
   const { data, isLoading } = useGetStudentsQuery({
     page,
@@ -22,8 +28,6 @@ export function StudentsManagement() {
     search,
   });
 
-  const { data: studentUsersData } = useGetUsersQuery({ page: 1, limit: 100, role: 'student' });
-  const studentUsers = studentUsersData?.data?.users ?? [];
 
   const [createStudent, { isLoading: isCreating }] = useCreateStudentMutation();
   const [updateStudent, { isLoading: isUpdating }] = useUpdateStudentMutation();
@@ -102,34 +106,40 @@ export function StudentsManagement() {
   };
 
   const handleSubmit = async () => {
-    if (selectedStudent) {
-      await updateStudent({
-        id: selectedStudent.id,
-        data: {
-          ...(form.firstName && { firstName: form.firstName }),
-          ...(form.lastName && { lastName: form.lastName }),
-          ...(form.email && { email: form.email }),
-          ...(form.phone && { phone: form.phone }),
-          ...(form.avatar && { avatar: form.avatar }),
-          ...(form.level && { level: form.level }),
-          ...(form.className && { className: form.className }),
+    try {
+      if (selectedStudent) {
+        await updateStudent({
+          id: selectedStudent.id,
+          data: {
+            ...(form.firstName && { firstName: form.firstName }),
+            ...(form.lastName && { lastName: form.lastName }),
+            ...(form.email && { email: form.email }),
+            ...(form.phone && { phone: form.phone }),
+            ...(form.avatar && { avatar: form.avatar }),
+            ...(form.level && { level: form.level }),
+            ...(form.className && { className: form.className }),
+            ...(form.section && { section: form.section }),
+            ...(form.parentId && { parentId: Number(form.parentId) }),
+          },
+        }).unwrap();
+        toast.success('Student updated successfully');
+      } else {
+        await createStudent({
+          userId: Number(form.userId),
+          matricule: form.matricule,
+          dateOfBirth: form.dateOfBirth,
+          gender: form.gender,
+          level: form.level,
+          className: form.className,
           ...(form.section && { section: form.section }),
           ...(form.parentId && { parentId: Number(form.parentId) }),
-        },
-      }).unwrap();
-    } else {
-      await createStudent({
-        userId: Number(form.userId),
-        matricule: form.matricule,
-        dateOfBirth: form.dateOfBirth,
-        gender: form.gender,
-        level: form.level,
-        className: form.className,
-        ...(form.section && { section: form.section }),
-        ...(form.parentId && { parentId: Number(form.parentId) }),
-      }).unwrap();
+        }).unwrap();
+        toast.success('Student created successfully');
+      }
+      setIsModalOpen(false);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Operation failed');
     }
-    setIsModalOpen(false);
   };
 
   const columns: Column<Student>[] = [
@@ -188,24 +198,18 @@ export function StudentsManagement() {
       id: 'actions',
       header: 'Actions',
       cell: (row) => (
-        <div className="flex space-x-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              openEdit(row);
-            }}
-          >
+        <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
+          <Button type="button" variant="ghost" size="sm" onClick={() => openEdit(row)}>
             <Edit className="h-4 w-4" />
           </Button>
           <Button
+            type="button"
             variant="ghost"
             size="sm"
             disabled={isDeleting}
-            onClick={async () => {
-              const ok = window.confirm('Delete this student?');
-              if (!ok) return;
-              await deleteStudent(row.id).unwrap();
+            onClick={() => {
+              setStudentToDelete(row);
+              setDeleteOpen(true);
             }}
           >
             <Trash2 className="h-4 w-4 text-destructive" />
@@ -224,7 +228,7 @@ export function StudentsManagement() {
             Manage all students in the system
           </p>
         </div>
-        <Button onClick={openCreate}>
+        <Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); openCreate(); }}>
           <Plus className="mr-2 h-4 w-4" />
           Add Student
         </Button>
@@ -250,7 +254,7 @@ export function StudentsManagement() {
         pagination={{
           page,
           pageSize: 10,
-          total: data?.totalPages ? data.totalPages * 10 : 0,
+          total: data?.total ?? 0,
           onPageChange: setPage,
         }}
         onRowClick={(row) => {
@@ -258,17 +262,18 @@ export function StudentsManagement() {
         }}
       />
 
-      <Modal
+      <FormModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         title={selectedStudent ? 'Edit Student' : 'Add New Student'}
         size="lg"
         footer={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>
             <Button
+              type="button"
               onClick={handleSubmit}
               disabled={isCreating || isUpdating || (!selectedStudent && !form.userId)}
             >
@@ -281,18 +286,13 @@ export function StudentsManagement() {
           {!selectedStudent && (
             <div className="space-y-2 md:col-span-2">
               <Label>User (role: student)</Label>
-              <Select value={form.userId} onValueChange={(v) => setForm((p) => ({ ...p, userId: v }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a student user..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {studentUsers.map((u: User) => (
-                    <SelectItem key={u.id} value={String(u.id)}>
-                      {u.firstName} {u.lastName} ({u.email})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <PaginatedSelect
+                resource="users"
+                role="student"
+                value={form.userId}
+                onValueChange={(v) => setForm((p) => ({ ...p, userId: v }))}
+                placeholder="Select a student user..."
+              />
               <p className="text-xs text-muted-foreground">
                 Create the user first in “Users” if you don’t see it here.
               </p>
@@ -335,8 +335,13 @@ export function StudentsManagement() {
           </div>
 
           <div className="space-y-2">
-            <Label>Parent ID (optional)</Label>
-            <Input value={form.parentId} onChange={(e) => setForm((p) => ({ ...p, parentId: e.target.value }))} />
+            <Label>Parent (optional)</Label>
+            <PaginatedSelect
+              resource="parents"
+              value={form.parentId}
+              onValueChange={(v) => setForm((p) => ({ ...p, parentId: v }))}
+              placeholder="Select a parent..."
+            />
           </div>
 
           {selectedStudent && (
@@ -364,7 +369,26 @@ export function StudentsManagement() {
             </>
           )}
         </div>
-      </Modal>
+      </FormModal>
+
+      <ConfirmDeleteDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete student"
+        itemName={studentToDelete ? `${studentToDelete.user?.firstName ?? ''} ${studentToDelete.user?.lastName ?? ''}`.trim() || studentToDelete.matricule : undefined}
+        onConfirm={async () => {
+          if (!studentToDelete) return;
+          try {
+            await deleteStudent(studentToDelete.id).unwrap();
+            toast.success('Student deleted successfully');
+            setStudentToDelete(null);
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'Delete failed');
+            throw err;
+          }
+        }}
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

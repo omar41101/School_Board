@@ -17,10 +17,14 @@ let AttendanceService = class AttendanceService {
         this.prisma = prisma;
     }
     async findAll(query) {
-        const { student, date, status } = query;
+        const { student, teacher, course, date, status } = query;
         const where = {};
         if (student)
             where.studentId = parseInt(student);
+        if (teacher)
+            where.teacherId = parseInt(teacher);
+        if (course)
+            where.courseId = parseInt(course);
         if (date)
             where.date = new Date(date);
         if (status)

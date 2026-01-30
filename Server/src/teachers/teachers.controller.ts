@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
@@ -28,8 +29,8 @@ export class TeachersController {
 
   @Get()
   @ApiOperation({ summary: 'Get all teachers' })
-  findAll() {
-    return this.teachersService.findAll();
+  findAll(@Query() query: any) {
+    return this.teachersService.findAll(query);
   }
 
   @Get('me')

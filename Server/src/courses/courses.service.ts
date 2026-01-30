@@ -8,14 +8,15 @@ export class CoursesService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(query: any) {
-    const { level, subject, status } = query;
+    const { level, subject, status, student, teacher, page = 1, limit = 10 } = query;
     const where: any = {};
-    
+
     if (level) where.level = level;
     if (subject) where.subject = subject;
     if (status) where.status = status;
+    if (teacher) where.teacherId = parseInt(teacher);
 
-    const courses = await this.prisma.course.findMany({
+    let courses = await this.prisma.course.findMany({
       where,
       include: {
         teacher: {
@@ -31,12 +32,29 @@ export class CoursesService {
           },
         },
       },
+      orderBy: { createdAt: 'desc' },
     });
+
+    // Filter by student enrollment (enrolledStudents is JSON array of student IDs)
+    if (student) {
+      const studentId = parseInt(student);
+      courses = courses.filter(
+        (c) => (c.enrolledStudents as number[] | null)?.includes(studentId) ?? false,
+      );
+    }
+
+    const total = courses.length;
+    const skip = (Number(page) - 1) * Number(limit);
+    const take = Number(limit);
+    const paginatedCourses = courses.slice(skip, skip + take);
 
     return {
       status: 'success',
-      results: courses.length,
-      data: { courses },
+      results: paginatedCourses.length,
+      total,
+      totalPages: Math.ceil(total / take),
+      currentPage: Number(page),
+      data: { courses: paginatedCourses },
     };
   }
 

@@ -17,12 +17,14 @@ let GradesService = class GradesService {
         this.prisma = prisma;
     }
     async findAll(query) {
-        const { student, course, academicYear, semester } = query;
+        const { student, course, teacher, academicYear, semester } = query;
         const where = {};
         if (student)
             where.studentId = parseInt(student);
         if (course)
             where.courseId = parseInt(course);
+        if (teacher)
+            where.teacherId = parseInt(teacher);
         if (academicYear)
             where.academicYear = academicYear;
         if (semester)

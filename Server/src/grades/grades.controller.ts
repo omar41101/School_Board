@@ -18,6 +18,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/decorators/roles.decorator';
+import { GetUser } from '../auth/decorators/get-user.decorator';
 
 @ApiTags('Grades')
 @Controller('grades')
@@ -53,9 +54,9 @@ export class GradesController {
   }
 
   @Delete(':id')
-  @Roles(Role.Admin)
-  @ApiOperation({ summary: 'Delete grade (Admin only)' })
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.gradesService.remove(id);
+  @Roles(Role.Admin, Role.Teacher)
+  @ApiOperation({ summary: 'Delete grade (Admin or owning Teacher)' })
+  remove(@Param('id', ParseIntPipe) id: number, @GetUser('id') userId?: number) {
+    return this.gradesService.remove(id, userId);
   }
 }

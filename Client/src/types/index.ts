@@ -260,6 +260,7 @@ export interface ApiResponse<T> {
 export interface PaginatedResponse<T> {
   status: string;
   results: number;
+  total: number;
   totalPages: number;
   currentPage: number;
   data: {
@@ -270,6 +271,9 @@ export interface PaginatedResponse<T> {
 export interface AuthResponse {
   success: boolean;
   token: string;
+  accessToken?: string;
+  refreshToken?: string;
+  expiresIn?: number;
   data: User;
 }
 

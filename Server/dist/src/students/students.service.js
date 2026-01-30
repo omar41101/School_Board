@@ -52,7 +52,9 @@ let StudentsService = class StudentsService {
         return {
             status: 'success',
             results: students.length,
+            total,
             totalPages: Math.ceil(total / limit),
+            currentPage: parseInt(page),
             data: { students },
         };
     }

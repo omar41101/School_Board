@@ -9,6 +9,7 @@ import { StudentDashboard } from './components/dashboard/StudentDashboard';
 import { TeacherDashboard } from './components/dashboard/TeacherDashboard';
 import { ParentDashboard } from './components/dashboard/ParentDashboard';
 import { AdminDashboard } from './components/dashboard/AdminDashboard';
+import { Toaster } from './components/ui/sonner';
 import type { User } from './types';
 
 function App() {
@@ -17,14 +18,16 @@ function App() {
 
   useEffect(() => {
     if (!isInitialized) {
-      dispatch(initializeAuth());
+    dispatch(initializeAuth());
     }
   }, [dispatch, isInitialized]);
 
   return (
+    <>
+    <Toaster position="top-right" richColors closeButton />
     <Router>
-      <Routes>
-        {/* Public Routes */}
+    <Routes>
+      {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
 
@@ -59,7 +62,7 @@ function App() {
         </Route>
 
         {/* Protected Admin Routes */}
-        <Route
+      <Route 
           element={<ProtectedRoute allowedRoles={['admin', 'direction']} />}
         >
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -68,6 +71,7 @@ function App() {
           <Route path="/admin/teachers" element={<AdminDashboard view="teachers" />} />
           <Route path="/admin/parents" element={<AdminDashboard view="parents" />} />
           <Route path="/admin/courses" element={<AdminDashboard view="courses" />} />
+          <Route path="/admin/planning" element={<AdminDashboard view="planning" />} />
           <Route path="/admin/analytics" element={<AdminDashboard view="analytics" />} />
           <Route path="/admin/settings" element={<AdminDashboard view="settings" />} />
         </Route>
@@ -82,9 +86,9 @@ function App() {
         </Route>
 
         {/* Default redirect based on role */}
-        <Route
+      <Route
           path="/dashboard"
-          element={
+        element={
             <ProtectedRoute>
               <NavigateToRoleDashboard />
             </ProtectedRoute>
@@ -92,9 +96,10 @@ function App() {
         />
 
         {/* Catch all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
     </Router>
+    </>
   );
 }
 
@@ -115,3 +120,4 @@ function NavigateToRoleDashboard() {
 }
 
 export default App;
+ 

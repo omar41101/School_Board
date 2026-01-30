@@ -16,8 +16,23 @@ let AssignmentsService = class AssignmentsService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async findAll() {
+    async findAll(query) {
+        const { course, courseIds } = query || {};
+        const where = {};
+        if (course) {
+            where.courseId = parseInt(course);
+        }
+        else if (courseIds) {
+            const ids = String(courseIds)
+                .split(',')
+                .map((id) => parseInt(id.trim()))
+                .filter((id) => !isNaN(id));
+            if (ids.length > 0) {
+                where.courseId = { in: ids };
+            }
+        }
         const assignments = await this.prisma.assignment.findMany({
+            where,
             include: {
                 course: {
                     select: {
