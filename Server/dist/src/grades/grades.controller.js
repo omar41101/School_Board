@@ -22,6 +22,7 @@ const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
 const roles_decorator_1 = require("../auth/decorators/roles.decorator");
 const roles_decorator_2 = require("../auth/decorators/roles.decorator");
+const get_user_decorator_1 = require("../auth/decorators/get-user.decorator");
 let GradesController = class GradesController {
     constructor(gradesService) {
         this.gradesService = gradesService;
@@ -38,8 +39,8 @@ let GradesController = class GradesController {
     update(id, updateGradeDto) {
         return this.gradesService.update(id, updateGradeDto);
     }
-    remove(id) {
-        return this.gradesService.remove(id);
+    remove(id, userId) {
+        return this.gradesService.remove(id, userId);
     }
 };
 exports.GradesController = GradesController;
@@ -80,11 +81,12 @@ __decorate([
 ], GradesController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
-    (0, roles_decorator_1.Roles)(roles_decorator_2.Role.Admin),
-    (0, swagger_1.ApiOperation)({ summary: 'Delete grade (Admin only)' }),
+    (0, roles_decorator_1.Roles)(roles_decorator_2.Role.Admin, roles_decorator_2.Role.Teacher),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete grade (Admin or owning Teacher)' }),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, get_user_decorator_1.GetUser)('id')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number]),
+    __metadata("design:paramtypes", [Number, Number]),
     __metadata("design:returntype", void 0)
 ], GradesController.prototype, "remove", null);
 exports.GradesController = GradesController = __decorate([

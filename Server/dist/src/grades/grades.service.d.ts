@@ -314,7 +314,7 @@ export declare class GradesService {
             };
         };
     }>;
-    remove(id: number): Promise<{
+    remove(id: number, userId?: number): Promise<{
         status: string;
         message: string;
     }>;

@@ -56,8 +56,8 @@ export function DataTable<T extends { id: number | string }>({
 
   return (
     <div className={cn('space-y-4', className)}>
-      {/* Desktop: table */}
-      <div className="hidden md:block rounded-md border">
+      {/* Desktop / tablet: table (from 1024px so "desktop" always sees table) */}
+      <div className="hidden lg:block rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -97,8 +97,8 @@ export function DataTable<T extends { id: number | string }>({
           </TableBody>
         </Table>
       </div>
-      {/* Mobile: cards */}
-      <div className="md:hidden space-y-3">
+      {/* Mobile only: cards */}
+      <div className="sm:hidden space-y-3">
         {data.length === 0 ? (
           <div className="rounded-lg border p-6 text-center text-muted-foreground">
             {emptyMessage}

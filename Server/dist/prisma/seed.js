@@ -279,20 +279,200 @@ async function main() {
             specialInstructions: 'No spicy food',
         },
     });
+    const student2Password = await bcrypt.hash('student123', 10);
+    const student2User = await prisma.user.upsert({
+        where: { email: 'student2@school.com' },
+        update: {},
+        create: {
+            firstName: 'Alex',
+            lastName: 'Brown',
+            email: 'student2@school.com',
+            password: student2Password,
+            role: 'student',
+            phone: '+1234567894',
+            isActive: true,
+        },
+    });
+    const student2 = await prisma.student.upsert({
+        where: { userId: student2User.id },
+        update: {},
+        create: {
+            userId: student2User.id,
+            matricule: 'STU002',
+            dateOfBirth: new Date('2009-07-12'),
+            gender: 'male',
+            level: 'Grade 10',
+            className: '10-A',
+            section: 'Science',
+            status: 'active',
+        },
+    });
+    const teacher2Password = await bcrypt.hash('teacher123', 10);
+    const teacher2User = await prisma.user.upsert({
+        where: { email: 'teacher2@school.com' },
+        update: {},
+        create: {
+            firstName: 'Sarah',
+            lastName: 'Wilson',
+            email: 'teacher2@school.com',
+            password: teacher2Password,
+            role: 'teacher',
+            phone: '+1234567895',
+            isActive: true,
+        },
+    });
+    const teacher2 = await prisma.teacher.upsert({
+        where: { userId: teacher2User.id },
+        update: {},
+        create: {
+            userId: teacher2User.id,
+            employeeId: 'EMP002',
+            dateOfBirth: new Date('1990-01-20'),
+            gender: 'female',
+            qualification: 'PhD in Mathematics',
+            specialization: 'Algebra',
+            salary: 55000,
+            subjects: ['Mathematics', 'Statistics'],
+            experience: 8,
+            addressCity: 'New York',
+            addressState: 'NY',
+            addressCountry: 'USA',
+        },
+    });
+    const parent2Password = await bcrypt.hash('parent123', 10);
+    const parent2User = await prisma.user.upsert({
+        where: { email: 'parent2@school.com' },
+        update: {},
+        create: {
+            firstName: 'Lisa',
+            lastName: 'Brown',
+            email: 'parent2@school.com',
+            password: parent2Password,
+            role: 'parent',
+            phone: '+1234567896',
+            isActive: true,
+        },
+    });
+    const parent2 = await prisma.parent.upsert({
+        where: { userId: parent2User.id },
+        update: {},
+        create: {
+            userId: parent2User.id,
+            relationship: 'mother',
+            occupation: 'Doctor',
+            addressCity: 'New York',
+            addressState: 'NY',
+            addressCountry: 'USA',
+        },
+    });
+    await prisma.student.update({
+        where: { id: student2.id },
+        data: { parentId: parent2.id },
+    });
+    const course3 = await prisma.course.upsert({
+        where: { code: 'MATH102' },
+        update: {},
+        create: {
+            name: 'Algebra & Calculus',
+            code: 'MATH102',
+            description: 'Algebra and introductory calculus',
+            level: 'Grade 10',
+            subject: 'Mathematics',
+            teacherId: teacher2.id,
+            credits: 4,
+            maxStudents: 25,
+            enrolledStudents: [student1.id, student2.id],
+            schedule: [{ day: 'Tuesday', time: '10:00-11:30' }, { day: 'Thursday', time: '10:00-11:30' }],
+            academicYear: '2024-2025',
+            semester: 'S1',
+            status: 'active',
+        },
+    });
+    await prisma.grade.create({
+        data: {
+            studentId: student2.id,
+            courseId: course1.id,
+            examType: 'quiz',
+            subject: 'Mathematics',
+            marks: 78,
+            totalMarks: 100,
+            percentage: 78,
+            grade: 'C_PLUS',
+            teacherId: teacher1.id,
+            academicYear: '2024-2025',
+            semester: 'S1',
+            examDate: new Date('2024-10-18'),
+        },
+    });
+    await prisma.assignment.create({
+        data: {
+            title: 'Quadratic Equations',
+            description: 'Solve problems 1-15 from Chapter 6',
+            courseId: course3.id,
+            teacherId: teacher2.id,
+            subject: 'Mathematics',
+            level: 'Grade 10',
+            className: '10-A',
+            dueDate: new Date('2024-11-05'),
+            totalMarks: 25,
+            attachments: [],
+            submissions: [],
+            status: 'active',
+        },
+    });
+    await prisma.event.createMany({
+        data: [
+            {
+                title: 'Math Olympiad',
+                description: 'School-level mathematics competition',
+                type: 'academic',
+                startDate: new Date('2024-11-15'),
+                endDate: new Date('2024-11-15'),
+                location: 'Main Hall',
+                organizerId: adminUser.id,
+                participants: [],
+                targetAudience: 'students',
+                levels: ['Grade 10', 'Grade 11'],
+                status: 'scheduled',
+                isPublic: true,
+                attachments: [],
+            },
+            {
+                title: 'Parent-Teacher Meeting',
+                description: 'Discuss student progress',
+                type: 'meeting',
+                startDate: new Date('2024-11-20'),
+                endDate: new Date('2024-11-20'),
+                location: 'Classrooms',
+                organizerId: adminUser.id,
+                participants: [],
+                targetAudience: 'all',
+                levels: ['All'],
+                status: 'scheduled',
+                isPublic: true,
+                attachments: [],
+            },
+        ],
+    });
+    await prisma.message.create({
+        data: {
+            senderId: adminUser.id,
+            recipientId: parent1User.id,
+            subject: 'Welcome to the new school year',
+            content: 'We are glad to have you. Please check the portal for schedules.',
+            attachments: [],
+            isRead: false,
+            priority: 'normal',
+            category: 'administrative',
+        },
+    });
     console.log('✅ Seed completed successfully!');
     console.log('📊 Created:');
-    console.log(`   - 1 Admin user (admin@school.com / admin123)`);
-    console.log(`   - 1 Teacher user (teacher1@school.com / teacher123)`);
-    console.log(`   - 1 Student user (student1@school.com / student123)`);
-    console.log(`   - 1 Parent user (parent1@school.com / parent123)`);
-    console.log(`   - 2 Courses`);
-    console.log(`   - 2 Grades`);
-    console.log(`   - 1 Assignment`);
-    console.log(`   - 2 Attendance records`);
-    console.log(`   - 1 Payment`);
-    console.log(`   - 1 Event`);
-    console.log(`   - 1 Message`);
-    console.log(`   - 1 Cantine order`);
+    console.log(`   - 1 Admin (admin@school.com / admin123)`);
+    console.log(`   - 2 Teachers (teacher1@school.com, teacher2@school.com / teacher123)`);
+    console.log(`   - 2 Students (student1@school.com, student2@school.com / student123)`);
+    console.log(`   - 2 Parents (parent1@school.com, parent2@school.com / parent123)`);
+    console.log(`   - 3 Courses, grades, assignments, events, messages`);
 }
 main()
     .catch((e) => {

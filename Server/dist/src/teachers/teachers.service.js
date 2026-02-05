@@ -76,6 +76,21 @@ let TeachersService = class TeachersService {
                         isActive: true,
                     },
                 },
+                courses: {
+                    include: {
+                        teacher: {
+                            include: {
+                                user: {
+                                    select: {
+                                        id: true,
+                                        firstName: true,
+                                        lastName: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
             },
         });
         if (!teacher) {

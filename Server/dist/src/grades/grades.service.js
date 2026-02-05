@@ -168,12 +168,20 @@ let GradesService = class GradesService {
             data: { grade: updatedGrade },
         };
     }
-    async remove(id) {
+    async remove(id, userId) {
         const grade = await this.prisma.grade.findUnique({
             where: { id },
         });
         if (!grade) {
             throw new common_1.NotFoundException('Grade not found');
+        }
+        if (userId) {
+            const teacher = await this.prisma.teacher.findFirst({
+                where: { userId },
+            });
+            if (teacher && grade.teacherId !== teacher.id) {
+                throw new common_1.NotFoundException('Grade not found or access denied');
+            }
         }
         await this.prisma.grade.delete({
             where: { id },

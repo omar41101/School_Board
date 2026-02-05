@@ -10,11 +10,12 @@ import { TeacherDashboard } from './components/dashboard/TeacherDashboard';
 import { ParentDashboard } from './components/dashboard/ParentDashboard';
 import { AdminDashboard } from './components/dashboard/AdminDashboard';
 import { Toaster } from './components/ui/sonner';
+import { StudentDemoChat } from './components/student/StudentDemoChat';
 import type { User } from './types';
 
 function App() {
   const dispatch = useAppDispatch();
-  const { isInitialized } = useAppSelector((state) => state.auth);
+  const { isInitialized, user } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     if (!isInitialized) {
@@ -25,6 +26,7 @@ function App() {
   return (
     <>
     <Toaster position="top-right" richColors closeButton />
+    <StudentDemoChat visible={(user as User)?.role === 'student'} />
     <Router>
     <Routes>
       {/* Public Routes */}

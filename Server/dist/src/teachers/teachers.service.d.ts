@@ -60,6 +60,56 @@ export declare class TeachersService {
                     avatar: string;
                     isActive: boolean;
                 };
+                courses: ({
+                    teacher: {
+                        user: {
+                            firstName: string;
+                            lastName: string;
+                            id: number;
+                        };
+                    } & {
+                        dateOfBirth: Date;
+                        gender: import(".prisma/client").$Enums.Gender;
+                        employeeId: string;
+                        qualification: string;
+                        specialization: string;
+                        salary: import("@prisma/client/runtime/library").Decimal;
+                        subjects: import("@prisma/client/runtime/library").JsonValue | null;
+                        experience: number;
+                        classes: import("@prisma/client/runtime/library").JsonValue | null;
+                        schedule: import("@prisma/client/runtime/library").JsonValue | null;
+                        documents: import("@prisma/client/runtime/library").JsonValue | null;
+                        createdAt: Date;
+                        id: number;
+                        userId: number;
+                        updatedAt: Date;
+                        addressStreet: string | null;
+                        addressCity: string | null;
+                        addressState: string | null;
+                        addressZipCode: string | null;
+                        addressCountry: string | null;
+                        status: import(".prisma/client").$Enums.TeacherStatus;
+                        joiningDate: Date;
+                    };
+                } & {
+                    name: string;
+                    description: string | null;
+                    level: string;
+                    schedule: import("@prisma/client/runtime/library").JsonValue | null;
+                    createdAt: Date;
+                    id: number;
+                    updatedAt: Date;
+                    status: string;
+                    code: string;
+                    subject: string;
+                    teacherId: number | null;
+                    credits: number;
+                    maxStudents: number;
+                    enrolledStudents: import("@prisma/client/runtime/library").JsonValue | null;
+                    syllabus: import("@prisma/client/runtime/library").JsonValue | null;
+                    academicYear: string;
+                    semester: import(".prisma/client").$Enums.Semester;
+                })[];
             } & {
                 dateOfBirth: Date;
                 gender: import(".prisma/client").$Enums.Gender;
